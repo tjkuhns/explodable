@@ -1,0 +1,179 @@
+# Consulting-quality analytical essay rubric
+#
+# Source: docs/research/phase0_reports/05_rubric_research.md
+# Derived from: Minto Pyramid Principle (McKinsey), BCG one-message-per-paragraph,
+# David C. Baker's "Drop and Give Me 20" expertise test, April Dunford positioning,
+# Roger Martin integrative thinking, Ambady-Rosenthal thin-slicing research,
+# Edelman-LinkedIn 2024 B2B Thought Leadership study, Berger-Milkman sharing research,
+# Harvard Kennedy School policy memo rubric.
+#
+# Purpose: evaluate long-form analytical essays (900-1500 words) for Explodable's
+# high-ticket consulting practice ($8-25K diagnostic engagements). Used by
+# src/content_pipeline/eval/judge.py as the scoring spec for an LLM-as-judge harness.
+#
+# Calibration target: Spearman rho >= 0.7 between judge scores and editor rankings
+# on a ranked corpus of existing drafts. Below that threshold the rubric fails
+# Reiter's minimum threshold for a useful surrogate metric.
+
+version: "1.0.0"
+purpose: "Evaluate consulting-quality analytical essays for Explodable."
+
+# The 10 criteria, each scored 1-5. See scoring_guidance below for weighting.
+criteria:
+  - id: "governing_thought_opening"
+    name: "Governing thought in the opening sentence"
+    source: "Minto Pyramid Principle (McKinsey, 1970s canon); Ambady-Rosenthal thin-slicing"
+    what_it_measures: >
+      Whether the first sentence names a specific, falsifiable claim that frames
+      the entire piece, rather than opening with background, context-setting, or
+      throat-clearing. Expert readers form expertise judgments within seconds
+      (r=0.39 across 38 studies), so the opening is disproportionately load-bearing.
+    scale:
+      1: "Opens with background, context-setting, or throat-clearing; the main claim appears late or never"
+      3: "Main argument appears in the first paragraph but is preceded by setup"
+      5: "First sentence names a specific, falsifiable claim that frames the entire piece"
+
+  - id: "complication_names_felt_tension"
+    name: "Complication names a tension the reader already feels"
+    source: "Minto SCQA structure; April Dunford 'reader is the hero' positioning"
+    what_it_measures: >
+      Whether the complication (the 'but something is wrong' move) articulates
+      a specific fear, frustration, or contradiction the target reader recognizes
+      but hasn't named. Generic complications fail because the reader has no
+      skin in the game.
+    scale:
+      1: "Complication is generic ('companies face challenges') or absent"
+      3: "Complication identifies a real problem but doesn't connect to the reader's lived anxiety"
+      5: "Complication articulates a specific fear, frustration, or contradiction the reader recognizes but hasn't named"
+
+  - id: "pattern_naming_insider"
+    name: "Pattern-naming from concentrated domain exposure"
+    source: "David C. Baker 'Drop and Give Me 20' test"
+    what_it_measures: >
+      Whether the piece names a repeating syndrome, archetype, or configuration
+      that only someone with deep, narrow exposure would recognize. Baker argues
+      going really really deep on one narrow topic signals equivalent depth
+      everywhere else. Generic observations fail the expertise test.
+    weight: 1.5
+    scale:
+      1: "Observations are available to any generalist; no insider signal"
+      3: "Some domain-specific observations, but framed as common knowledge"
+      5: "Names a repeating syndrome, archetype, or configuration that only someone with deep, narrow exposure would recognize"
+
+  - id: "integrative_thinking"
+    name: "Integrative thinking: holds opposing models in tension"
+    source: "Roger Martin (Rotman School); integrative thinking framework"
+    what_it_measures: >
+      Whether the piece identifies two models that seem mutually exclusive, then
+      synthesizes a resolution that contains elements of both — rather than
+      choosing sides or treating the dichotomy as settled. Integrative thinking
+      is the sharpest published diagnostic of senior analytical expertise.
+    scale:
+      1: "Binary framing (X is good / Y is bad) or single-perspective analysis"
+      3: "Acknowledges complexity but defaults to one side"
+      5: "Identifies two models that seem mutually exclusive, then synthesizes a resolution that contains elements of both"
+
+  - id: "evidence_specificity_goldilocks"
+    name: "Evidence specificity (the Goldilocks zone)"
+    source: "Linguistic markers of credibility research"
+    what_it_measures: >
+      Whether the piece deploys named cases, specific numbers, and precise
+      mechanisms — enough detail to signal insider knowledge without over-explaining.
+      Generic appeals ('studies show', 'best practice', 'many companies') fail
+      the insider test; exhaustive citation-dumping fails the reader-trust test.
+    scale:
+      1: "Generic appeals ('studies show,' 'best practice,' 'many companies')"
+      3: "Some specific data points or examples, but not consistently deployed"
+      5: "Named cases, specific numbers, precise mechanisms — enough detail to signal insider knowledge without over-explaining"
+
+  - id: "contrarian_causal_mechanism"
+    name: "Contrarian claim with causal mechanism"
+    source: "Paul Graham usefulness formula; Burgoon Expectancy Violations Theory; belief perseverance research"
+    what_it_measures: >
+      Whether contrarian claims are backed by a specific causal mechanism (not
+      just assertion). Belief perseverance research shows counter-explanation
+      is the only effective debiasing technique — simple reversal of consensus
+      fails. The strength of the claim must match the strength of its evidence.
+    scale:
+      1: "Assertion without evidence ('buyers are irrational') or no contrarian element at all"
+      3: "Contrarian framing present but supported only by anecdote or appeals to authority"
+      5: "Contrarian claim backed by specific causal mechanism and calibrated to evidence strength"
+
+  - id: "forward_to_ceo_arousal"
+    name: "Forward-to-CEO arousal (names a specific threat or missed opportunity)"
+    source: "Edelman-LinkedIn 2024 B2B Thought Leadership study (n~3500); Berger-Milkman viral content research (physiological arousal drives sharing)"
+    what_it_measures: >
+      Whether the piece names a specific, quantifiable threat or missed opportunity
+      that would trigger a fractional CMO to forward it with 'thought you should
+      see this'. Sharing is driven by arousal (awe, anxiety, anger) not valence.
+      60% of B2B decision-makers influenced by thought leadership realized a
+      missed opportunity; 29% realized they were more vulnerable than expected.
+    weight: 1.5
+    scale:
+      1: "No urgency; reads as informational overview"
+      3: "Implies risk or opportunity but doesn't name it specifically enough to trigger action"
+      5: "Names a specific, quantifiable threat or missed opportunity that would make a CMO forward it with 'thought you should see this'"
+
+  - id: "headings_standalone_argument"
+    name: "Headings function as standalone argument"
+    source: "BCG action-title standard; Towson University business writing rubric"
+    what_it_measures: >
+      Whether reading only the headings reconstructs the core argument. BCG's
+      standard: each heading is a complete, specific sentence-case assertion
+      that passes the 'so what?' test. Topic-label headings ('Background',
+      'Analysis') fail because they describe the container, not the argument.
+    scale:
+      1: "Topic-label headings ('Background,' 'Analysis,' 'Conclusion')"
+      3: "Headings hint at content but don't convey the argument"
+      5: "Reading only headings reconstructs the core argument; each heading is a complete, specific assertion in sentence case"
+
+  - id: "counterargument_handling"
+    name: "Counterargument handling (the strongest objection)"
+    source: "Harvard Kennedy School policy memo rubric"
+    what_it_measures: >
+      Whether the piece anticipates the reader's strongest objection, steelmans
+      it, and addresses it with evidence. Pre-empting the objection increases
+      rather than undermines credibility — it signals that the writer has
+      actually sat with the hardest challenge to their position.
+    scale:
+      1: "No acknowledgment of alternative views or limitations"
+      3: "Mentions a potential objection but dismisses it quickly"
+      5: "Anticipates the reader's strongest objection, steelmans it, and addresses it with evidence"
+
+  - id: "conclusion_advances_beyond_summary"
+    name: "Conclusion advances beyond summary"
+    source: "Minto Pyramid conclusion pattern; Harvard Kennedy School rubric"
+    what_it_measures: >
+      Whether the conclusion delivers a novel implication, actionable next step,
+      or reframing that couldn't have been stated at the outset. The argument
+      should have moved. Summary-only conclusions fail because they add no
+      information relative to the body.
+    scale:
+      1: "Restates what was already said; no new synthesis"
+      3: "Summarizes key points with modest reframing"
+      5: "Delivers a novel implication, actionable next step, or reframing that couldn't have been stated at the outset"
+
+# Scoring rules
+scoring_guidance:
+  max_per_criterion: 5
+  min_per_criterion: 1
+  weighted_criteria:
+    # Research flags these three as highest-signal for high-ticket engagement
+    governing_thought_opening: 1.5
+    pattern_naming_insider: 1.5
+    forward_to_ceo_arousal: 1.5
+  veto_rule: >
+    A score of 1 on ANY criterion is a potential veto regardless of total.
+    Flagged drafts require manual review before publication.
+  pass_threshold: 40
+    # (unweighted sum, ~equivalent to average 4/5 across all criteria)
+  notes: >
+    The research report notes three caveats: (1) no controlled experiment has
+    directly tested pyramid-structured vs bottom-up business writing — empirical
+    support is indirect via cognitive load theory and comprehension research;
+    (2) the rubric is consulting-calibrated and may not transfer cleanly to
+    The Boulder's cultural analysis register — expect systematically lower
+    scores on forward_to_ceo_arousal for Boulder drafts without that being a
+    quality signal; (3) criteria 3, 6, 7 depend on the reader knowing the
+    target audience's context — pattern-naming and CEO-arousal require a
+    specific reader, not an abstract one.

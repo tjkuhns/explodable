@@ -1,0 +1,101 @@
+You are classifying the relationship between two findings in a psychological knowledge base organized around human anxiety. The relationship is DIRECTED — from Finding A to Finding B.
+
+You must output valid JSON only. No preamble, no explanation outside the JSON.
+
+---
+
+RELATIONSHIP TYPE DEFINITIONS
+
+Choose exactly one type. Read all definitions before deciding.
+
+supports — A provides independent evidence for the same claim as B. Different methodology, different domain, or different research tradition arrives at the same conclusion. If A were removed, B would still be believed but with less confidence. Diagnostic question: did B's authors need to know A existed to reach B's conclusion? If yes, that is extends, not supports. If they could have discovered B independently, it is supports. Test: does A independently corroborate what B asserts?
+
+contradicts — A provides evidence that conflicts with B's claim. Either direct empirical conflict or theoretical incompatibility. If both A and B are true, there is a genuine tension that requires resolution.
+
+qualifies — A adds boundary conditions to B. B is still true, but A narrows its scope: "B is true except when X" or "B holds only under conditions Y." B is not wrong — its claim is real — but A establishes limits on where it applies. If A says "B is true but only under conditions X," that is qualifies. If A says "B's findings are wrong or non-replicable," that is contradicts. Scope narrowing is not contradiction. Test: does A survive if B is false? No — qualifies presupposes B is at least partially true.
+
+extends — A takes B's conclusion and pushes it into new territory B did not cover. A presupposes B is true and uses it as a foundation to reach a new claim. B remains fully intact as stated. Test: would A make sense if B were false? If not, it probably extends B. Does A's conclusion depend on B's conclusion being true?
+
+subsumes — A is a more general claim that logically contains B as a special case. If A is true, B follows as an instance without additional empirical premises. A meta-analytic finding that covers the phenomenon in B subsumes B. If connecting A to B requires an additional empirical premise not contained in A's claim, it is extends, not subsumes. Subsumes requires pure logical containment.
+
+reframes — A reconceptualizes B through a different theoretical lens without contradicting B's empirical content. The facts B asserts remain valid, but A offers a different mechanism, framework, or meaning for those facts. Two distinct theories looking at the same phenomenon from different angles. Test: does A say "what B found is true, but here is what it really means or why it really happens"?
+
+---
+
+CONTRASTIVE EXAMPLES FROM THIS KNOWLEDGE BASE
+
+These show the difference between extends and supports — the most commonly confused pair.
+
+EXTENDS (correct): Allostatic load research → SMB cash flow stress
+- A (health psychology): "Allostatic load shows chronic stress progressively dysregulates neuroendocrine, immune, metabolic systems"
+- B (entrepreneurship psychology): "Cash flow uncertainty activates a sustained stress response in SMB owners"
+- Why EXTENDS: A's general mechanism (allostatic load) is the foundation. B takes that mechanism and applies it to a specific new context (SMB owners) that A didn't study. B depends on A being true. B pushes A's conclusion into new territory.
+
+SUPPORTS (not extends): SEEKING→RAGE circuit → Berkowitz frustration-aggression
+- A (affective neuroscience): "When SEEKING is thwarted, RAGE is aroused — blocked goal pursuit activates the RAGE circuit"
+- B (social psychology): "Frustrations generate aggressive inclinations to the degree they arouse negative affect"
+- Why SUPPORTS, not extends: A and B independently arrived at the same conclusion from different traditions — one via ESB in animals, the other via behavioral experiments in humans. Neither depends on the other being true. A corroborates B; it doesn't build on B.
+
+EXTENDS vs SUBSUMES (common confusion):
+- A (health psychology): "Allostatic load — chronic stress produces measurable physiological wear through neuroendocrine dysregulation"
+- B (entrepreneurship psychology): "SMB owners managing cash flow crises show cortisol and inflammatory markers consistent with allostatic load"
+- Relationship: A EXTENDS B
+- Why NOT subsumes: Subsumes requires that B is a deductive consequence of A — if allostatic load is true, SMB cash flow stress follows logically. It does not. You had to empirically discover that SMB owners show these markers. Extends means A's mechanism was applied to new territory B didn't cover.
+- Why NOT supports: A and B are not independent evidence for the same claim. B depends on A's mechanism being real. If allostatic load didn't exist, B's finding would have no theoretical basis.
+
+REFRAMES vs SUPPORTS (common confusion):
+- A (social psychology): "Meaning Maintenance Model — threats to any meaning framework (not just death) trigger compensatory defense"
+- B (existential psychology): "Terror Management Theory — mortality salience drives worldview defense and self-esteem striving"
+- Relationship: A REFRAMES B
+- Why NOT supports: A does not independently corroborate B. A actually challenges B's uniqueness claim by showing death is not privileged — other meaning threats produce the same effects.
+- Why NOT contradicts: A does not say B is wrong. TMT's empirical observations (mortality salience produces worldview defense) remain valid. A reinterprets what those observations mean — death anxiety is one instance of a broader meaning-threat mechanism.
+
+---
+
+DIRECTION RULE
+
+The relationship is FROM A TO B.
+
+- "A supports B" means A gives evidence for B
+- "A extends B" means A builds on B's conclusion
+- "A subsumes B" means A is more general than B, containing B as a special case
+- "A reframes B" means A reinterprets B's findings through a different lens
+- "A qualifies B" means A narrows B's scope
+- "A contradicts B" means A conflicts with B
+
+If the relationship would make more sense in the reverse direction (B extends A, not A extends B), set skip to true and explain why.
+
+---
+
+CONFIDENCE RUBRIC
+
+0.90–1.00: The connection is direct, unambiguous, and well-supported. Both claims explicitly address the same phenomenon.
+0.75–0.89: The connection is defensible and clear, but requires some interpretive judgment.
+0.50–0.74: The connection is plausible but indirect or requires significant inference across domains.
+If you cannot state in one sentence what specific mechanism or phenomenon connects A to B beyond shared vocabulary or shared neural substrate, the confidence ceiling is 0.55. Shared neural substrate alone (e.g. both findings involve the same neurotransmitter, brain region, or circuit) is not sufficient grounds for a relationship above 0.60 — the functional roles and the direction of inference must also correspond.
+Below 0.50: Skip this relationship — the connection is too tenuous to be useful.
+
+---
+
+REQUIRED REASONING PROCESS
+
+Before outputting JSON, you must identify:
+1. What specific element of A connects to what specific element of B
+2. Whether the direction (A → B) is correct or should be reversed
+3. Which definition best fits, and why it fits better than the two most similar alternatives
+
+---
+
+OUTPUT FORMAT
+
+{
+  "relationship_type": "supports|contradicts|qualifies|extends|subsumes|reframes",
+  "confidence": 0.00,
+  "rationale": "One or two sentences. Must reference specific content from both A and B — name the mechanism, finding, or concept from each. Do not write a generic rationale.",
+  "a_element": "The specific part of A that creates the connection",
+  "b_element": "The specific part of B that connects to A",
+  "direction_check": "correct|reversed",
+  "skip": false
+}
+
+If skip is true, set relationship_type to null, confidence to null, and explain in rationale why this pair should not be linked or why the direction is wrong.

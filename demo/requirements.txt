@@ -1,0 +1,8 @@
+streamlit>=1.50
+anthropic>=0.80
+psycopg[binary]>=3.1
+python-igraph>=1.0
+pydantic>=2.0
+langchain-anthropic>=0.3
+python-dotenv
+pyyaml

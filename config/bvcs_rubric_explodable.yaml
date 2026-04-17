@@ -1,0 +1,339 @@
+# ============================================================
+# Brand Voice Compliance Score (BVCS) Rubric — Explodable
+# Explodable Voice Compliance Scorer Configuration
+# ============================================================
+# This file defines the scoring criteria the Voice Compliance
+# Scorer uses to evaluate drafts against the Explodable voice profile.
+#
+# Total score: 0–100
+# Pass threshold: 70
+# Auto-revise if below threshold (max 3 attempts)
+# Score disclosed to operator AFTER reading draft, not before
+#
+# Explodable voice: direct, evidence-based, B2B buyer psychology,
+# no absurdism, no humor requirement, no cultural artifact openers.
+# The voice is diagnostic, not philosophical.
+# ============================================================
+
+brand: "explodable"
+version: "1.0"
+total_points: 100
+pass_threshold: 70
+revision_instruction_file: "voice_profile_explodable.yaml"
+
+# ============================================================
+# SCORING DIMENSIONS
+# Each dimension has: weight, method, criteria, fail_signals
+# Methods: automated (regex/stats) or scored (LLM rubric prompt)
+# ============================================================
+
+dimensions:
+
+  # ----------------------------------------------------------
+  # 1. OPENER QUALITY (15 points)
+  # First sentence names a specific finding, data point, or reframe.
+  # Not a question, not an anecdote, not a methodology pitch.
+  # ----------------------------------------------------------
+  opener_quality:
+    weight: 15
+    method: scored
+    description: >
+      Evaluates whether the opening names a specific finding, observable
+      behavior, or data point. The ICP has 400 unread emails — the first
+      sentence determines whether this becomes 399.
+    scoring_prompt: >
+      Score the opener (first 100 words) on a 0–15 scale.
+      15: Opens with a specific finding, data point, or behavioral reframe.
+          Immediate diagnostic value. No setup, no question, no methodology pitch.
+      10–14: Opens with a clear claim but the finding is slightly generic or
+             the reframe lands in the second sentence rather than the first.
+      5–9: Opens with context-setting, a question, or a general observation
+           before getting to the finding. The ICP would skim past this.
+      0–4: Opens with a question, methodology description, "we" statement,
+           or announcement of what the piece will cover.
+    fail_signals:
+      - Opens with a question ("Have you ever wondered...")
+      - Opens with methodology ("Our research shows...")
+      - Opens with "we" or "Explodable"
+      - Opens with a generic industry observation
+      - First sentence could apply to any B2B service
+
+  # ----------------------------------------------------------
+  # 2. STRUCTURAL ARC (15 points)
+  # Builds toward the forwarding artifact.
+  # Each section = finding + evidence + implication.
+  # ----------------------------------------------------------
+  structural_arc:
+    weight: 15
+    method: scored
+    description: >
+      Evaluates whether the piece follows the Explodable structural pattern:
+      each section delivers a finding with evidence and implication. The arc
+      builds toward the forwarding artifact — the shareable standalone paragraph.
+    scoring_prompt: >
+      Score the structural arc on a 0–15 scale.
+      15: Each section delivers finding + evidence + implication. Clear buildup
+          to a self-contained shareable paragraph. No filler sections.
+      10–14: Structure is mostly finding-driven but one section lacks evidence
+             or the forwarding artifact is present but not highlighted.
+      5–9: Loose structure. Some sections are analytical, others drift into
+           generic commentary or methodology description.
+      0–4: No discernible structure. Reads as a blog post rather than a
+           diagnostic document.
+    fail_signals:
+      - Sections without a named finding
+      - Filler paragraphs with no evidence
+      - Methodology description in the body
+      - Conclusion that summarizes rather than implies
+
+  # ----------------------------------------------------------
+  # 3. FORWARDING ARTIFACT (15 points)
+  # Binary requirement from voice profile: must contain one
+  # self-contained paragraph that survives being forwarded
+  # without context. "Read this." test.
+  # ----------------------------------------------------------
+  forwarding_artifact_present:
+    weight: 15
+    method: scored
+    description: >
+      Evaluates whether the piece contains at least one self-contained
+      shareable paragraph — a finding that reads cleanly forwarded with
+      only "Read this." as context. Required per voice profile.
+    scoring_prompt: >
+      Score forwarding artifact presence on a 0–15 scale.
+      15: Contains a clearly identifiable standalone paragraph — a single
+          finding with evidence that requires no setup. Could be forwarded
+          to a CRO with only "Read this." A reader encountering only this
+          paragraph would understand the core insight.
+      10–14: A strong paragraph exists but requires slight context from
+             the preceding section to fully land.
+      5–9: No single paragraph stands alone as a forwarding unit. The
+           piece has good content but nothing is self-contained.
+      0–4: No shareable unit exists. Every paragraph depends on context.
+    fail_signals:
+      - No standalone finding paragraph anywhere in the piece
+      - Best candidate requires setup from prior paragraphs
+      - All findings are woven into narrative without standalone formatting
+
+  # ----------------------------------------------------------
+  # 4. EVIDENCE DENSITY (15 points)
+  # Claims traceable to named research. No unsourced assertions.
+  # ----------------------------------------------------------
+  evidence_density:
+    weight: 15
+    method: scored
+    description: >
+      Evaluates whether claims are backed by named evidence. Not "research
+      suggests" but "the JOLT Effect research (2.5M calls)." Every significant
+      claim traces to a specific study, dataset, or named finding.
+    scoring_prompt: >
+      Score evidence density on a 0–15 scale.
+      15: Every significant claim names its source — specific study, named
+          researcher, sample size, year. No "research shows" without specifics.
+      10–14: Most claims sourced but one or two significant assertions rely
+             on "research suggests" without naming the source.
+      5–9: Multiple unsourced claims. Sources are present but vague.
+      0–4: Claims presented as self-evident. "Buyers are afraid" without
+           evidence. Reads as opinion, not diagnosis.
+    fail_signals:
+      - '"Research suggests" without naming the research'
+      - '"Studies show" without identifying which studies'
+      - Claims about buyer behavior without data
+      - Percentages or statistics without source attribution
+
+  # ----------------------------------------------------------
+  # 5. VOICE CONSISTENCY (15 points)
+  # Direct, specific, diagnostic register throughout.
+  # No hedging, no "we", no corporate softening.
+  # ----------------------------------------------------------
+  voice_consistency:
+    weight: 15
+    method: scored
+    description: >
+      Evaluates whether the voice maintains Explodable's diagnostic register:
+      direct, specific, confident, evidenced. Not a pitch. Not a blog post.
+      Not corporate marketing. A doctor delivering test results.
+    scoring_prompt: >
+      Score voice consistency on a 0–15 scale.
+      15: Consistent diagnostic register throughout. Reads like a specific
+          person with a point of view delivering findings — not a brand
+          producing content. "I" where appropriate. No corporate hedging.
+      10–14: Mostly consistent but occasional corporate softening or
+             generic marketing language. One or two "we help" type phrases.
+      5–9: Register inconsistency. Parts read like diagnosis, parts read
+           like a sales pitch or generic blog. Multiple hedge phrases.
+      0–4: Wrong register. Reads like marketing copy, a webinar script,
+           or a generic B2B blog. No discernible point of view.
+    fail_signals:
+      - '"We help [ICP] [achieve/improve/optimize]" construction'
+      - '"Our methodology/approach/framework enables..."'
+      - 'Hedging: "it depends," "some evidence suggests"'
+      - 'Generic "we" throughout (no founder voice)'
+      - Could have been written by any B2B content team
+
+  # ----------------------------------------------------------
+  # 6. BANNED PHRASE CHECK (10 points)
+  # Automated. Binary per phrase. Zero tolerance.
+  # ----------------------------------------------------------
+  banned_phrase_check:
+    weight: 10
+    method: automated
+    description: >
+      Automated scan for banned words and phrases from the Explodable
+      voice profile. Each banned phrase detected deducts points proportionally.
+    banned_phrases:
+      - "innovative"
+      - "passionate"
+      - "disruptive"
+      - "game-changing"
+      - "cutting-edge"
+      - "best-in-class"
+      - "world-class"
+      - "leverage"
+      - "unlock"
+      - "transform"
+      - "empower"
+      - "holistic"
+      - "seamless"
+      - "robust"
+      - "synergy"
+      - "ecosystem"
+      - "journey"
+      - "storytelling"
+      - "authentic"
+      - "thought leader"
+      - "deep dive"
+      - "unpack"
+      - "circle back"
+      - "double click"
+      - "move the needle"
+      - "boil the ocean"
+      - "it goes without saying"
+      - "at the end of the day"
+      - "in today's landscape"
+      - "in today's world"
+      - "now more than ever"
+      - "In conclusion"
+      - "To summarize"
+      - "In this article"
+      - "In this post"
+      - "In this piece"
+      - "We're excited to"
+      - "I'm thrilled to"
+    immediate_fail_phrases:
+      - "In conclusion"
+      - "To summarize"
+      - "We're excited to"
+    scoring_logic: >
+      Start at 10. Deduct 1 point per banned phrase instance (minimum 0).
+      If any immediate_fail_phrase is present, cap total BVCS at 60
+      regardless of other dimension scores.
+
+  # ----------------------------------------------------------
+  # 7. LENGTH COMPLIANCE (5 points)
+  # Automated. 600-1200 words per voice profile.
+  # ----------------------------------------------------------
+  length_compliance:
+    weight: 5
+    method: automated
+    description: >
+      Automated word count check. Explodable newsletters target 600–1200 words.
+      Shorter than The Boulder by design — density over length.
+    targets:
+      min_words: 600
+      max_words: 1200
+    scoring_logic: >
+      5 points if within range. 3 points if within 10% of range boundary.
+      0 points if outside range by more than 10%.
+
+  # ----------------------------------------------------------
+  # 8. SOURCE INTEGRATION (10 points)
+  # Sources woven conversationally, not academic citation format.
+  # ----------------------------------------------------------
+  source_integration:
+    weight: 10
+    method: scored
+    description: >
+      Evaluates whether sources are referenced conversationally — "the JOLT
+      Effect research found" not "(Dixon, 2022)." Sources should feel like
+      things the writer knows, not footnotes. Name the institution when it
+      adds credibility.
+    scoring_prompt: >
+      Score source integration on a 0–10 scale.
+      10: All sources referenced conversationally and feel like natural
+          knowledge. Named institutions where credibility matters.
+      7–9: Most sources conversational. One or two feel like inserted citations.
+      4–6: Multiple academic-style citations. Sources present but break
+           the diagnostic voice.
+      0–3: Academic citation format "(Author, Year)" used. Or significant
+           claims with no source reference at all.
+    fail_signals:
+      - 'Academic citation format "(Author, Year)"'
+      - '"Studies show" without naming the studies'
+      - Statistics without named source
+      - Sources feel like footnotes rather than knowledge
+
+# ============================================================
+# REVISION INSTRUCTIONS
+# When score < 70, these instructions are passed to the
+# Draft Generator for revision. Specific, not generic.
+# ============================================================
+
+revision_instructions:
+  general: >
+    The draft scored below the pass threshold. Revise specifically
+    for the lowest-scoring dimensions. Do not rewrite the entire draft —
+    target the specific failures identified in the dimension scores.
+    Reference voice_profile_explodable.yaml for guidance.
+  by_dimension:
+    opener_quality: >
+      Rewrite the opening sentence. Start with a specific finding, data point,
+      or behavioral reframe. Not a question. Not methodology. Not "we."
+      The first sentence must deliver diagnostic value immediately.
+    structural_arc: >
+      Restructure so each section follows: finding → evidence → implication.
+      Remove any section that doesn't deliver a finding. Build toward the
+      forwarding artifact.
+    forwarding_artifact_present: >
+      Identify the strongest finding in the piece. Write it as a standalone
+      paragraph — 3-5 sentences, self-contained, requires no setup. Test:
+      could someone forward only this paragraph with "Read this." and have
+      it land? If not, rewrite until it does.
+    evidence_density: >
+      For every significant claim, name the source: specific study, researcher,
+      sample size, year. Replace "research suggests" with the actual research.
+      Replace "buyers tend to" with the data showing they do.
+    voice_consistency: >
+      Remove all "we help," "our approach," and corporate hedging. Replace
+      generic "we" with "I" where appropriate. Remove any sentence that could
+      have been written by a generic B2B content team. The voice is a specific
+      person delivering findings, not a brand producing content.
+    banned_phrase_check: >
+      Remove all banned phrases. Do not replace them with synonyms — restructure
+      the sentence to say what you actually mean without the filler.
+    length_compliance: >
+      Target 600-1200 words. If over, cut sections that don't deliver findings.
+      If under, the piece likely lacks evidence density — add named sources.
+    source_integration: >
+      Replace all "(Author, Year)" with conversational references. "A 2024 study
+      from [institution]" or "the [named] research found." Sources should sound
+      like things you know, not things you cited.
+
+# ============================================================
+# CANONICAL EXAMPLES
+# Reference passages for scorer calibration.
+# ============================================================
+
+canonical_examples:
+  opener: >
+    The JOLT Effect research analyzed 2.5 million sales calls.
+    In 87% of them, buyer indecision — not budget, not competition, not timing —
+    was what killed the deal.
+  body: >
+    Finding: When buyers cite "internal alignment issues" as a stall reason,
+    behavioral economics research maps this to career risk anxiety
+    in the majority of documented cases — not organizational dysfunction.
+    The deal isn't stuck. A person is afraid. Those require different responses.
+  closer: >
+    If this pattern holds in your category, the question isn't
+    why your deal went dark. It's which type of fear you haven't addressed yet.

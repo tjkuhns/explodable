@@ -1,0 +1,101 @@
+# Graph-augmented RAG for small, pre-tagged knowledge bases
+
+**For a ~300-node knowledge graph with existing categorical tags, typed relationships, and confidence scores, the dominant finding across all five research questions is the same: the heavyweight graph-RAG machinery (Leiden community detection, LLM-based extraction pipelines, dedicated graph databases) was designed for large unstructured corpora and adds negligible value at this scale.** What does add value is selectively adopting the *retrieval algorithms* — particularly Personalized PageRank and diversity-constrained traversal — while keeping your existing Postgres infrastructure and tag structure intact. Below, each question is addressed with specific papers, quantitative findings, and source-type classifications.
+
+---
+
+## 1. Leiden community detection is redundant on a pre-tagged 300-node graph
+
+The original GraphRAG paper (Edge et al., "From Local to Global: A Graph RAG Approach to Query-Focused Summarization," arXiv 2404.16130, 2024; **pre-print**, Microsoft Research) evaluated exclusively on corpora in the **~1 million token range**, producing a graph of **8,564 nodes and 20,691 edges**. No small-scale evaluation was conducted. The paper explicitly motivates its approach for situations where "the volume of data requires a RAG approach" — implying the architecture is unnecessary when the full corpus fits in an LLM context window. At ~300 findings, even with rich descriptions, total content likely falls within **50K–200K tokens**, well inside modern context limits.
+
+Three peer-reviewed papers directly undermine the case for Leiden clustering on a small, already-tagged graph. **ArchRAG** (Wang et al., AAAI 2025; **peer-reviewed**) identifies that GraphRAG's Leiden clustering "does not consider node attributes during clustering, which causes the community's summary to become dispersed." ArchRAG replaces Leiden with LLM-based attributed community detection and achieves **10% higher accuracy** while reducing token cost by **250×** (from 1,394M tokens to 5.1M on HotpotQA). This directly implies that structure-only clustering produces semantically incoherent communities — precisely the failure mode expected when high-quality semantic tags already exist. **GraphRAG-V** (Yu et al., 2026; **peer-reviewed**, Springer) goes further, showing that constructing a triple-based knowledge graph can be skipped entirely: vector-space community detection on chunk embeddings outperforms Microsoft's GraphRAG across all metrics with an **11-percentage-point recall improvement** over the vector-store baseline on MultiHopRAG's 2,556 questions.
+
+The resolution limit of modularity (Fortunato & Barthélemy, PNAS 2007; **peer-reviewed**) provides the theoretical underpinning. Modularity-based methods have an intrinsic resolution limit proportional to √L (total edges). With ~480 relationships, √L ≈ 22, meaning community detection can resolve groups of roughly this minimum size — but the hierarchical depth would be **at most 2–3 levels**, offering minimal structural advantage over your existing 5 anxiety categories × multiple domain tags.
+
+**No published study directly compares Leiden/Louvain against hand-labeled categories for retrieval quality.** This is a significant gap. However, a WSDM 2019 peer-reviewed paper on knowledge-graph-enhanced community detection (Sahu et al.) demonstrates that incorporating external knowledge as node attributes improves community detection accuracy by **~20% in F-measure and Jaccard** over structure-only methods — implying that your existing tags already capture information that Leiden would need to rediscover, imperfectly.
+
+The systematic evaluation by Han et al. ("RAG vs. GraphRAG," arXiv 2502.11371, 2025; **pre-print**) tested on standardized benchmarks (NQ, HotpotQA, MultiHop-RAG, QMSum) and found that **plain RAG outperforms GraphRAG on single-hop, fact-based queries**, with GraphRAG's community-level approach performing poorly on specific retrieval tasks. GraphRAG-Bench (Xiang et al., accepted ICLR 2026; **peer-reviewed**) confirms that GraphRAG frequently underperforms vanilla RAG except on complex multi-hop reasoning requiring hierarchical knowledge traversal.
+
+**Bottom line:** At ~300 nodes with pre-existing anxiety/domain tags, Leiden adds overhead without measurable benefit. Use your tag structure directly as the community/clustering layer.
+
+## 2. HippoRAG's PPR retrieval can be decoupled, but nothing exists off-the-shelf
+
+HippoRAG (Gutiérrez et al., "HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models," NeurIPS 2024; **peer-reviewed**) constructs a knowledge graph via LLM-based OpenIE extraction, then retrieves using Personalized PageRank. On 2WikiMultiHopQA, it improves **R@2 by ~11% and R@5 by ~20%** over ColBERTv2, while being **10–30× cheaper and 6–13× faster** than iterative retrieval methods like IRCoT. HippoRAG v2 exists: "From RAG to Memory: Non-Parametric Continual Learning for Large Language Models" (Gutiérrez et al., ICML 2025 poster; **peer-reviewed**, arXiv 2502.14802). V2 adds passage nodes to the graph, replaces entity NER with query-to-triple matching (improving R@5 by **12.5%** in ablation), and adds LLM-based recognition filtering using DSPy MIPROv2-optimized prompts.
+
+The PPR retrieval layer is **logically separable** from the extraction pipeline. What the retrieval path actually consumes is: (1) an igraph/networkx graph with nodes and edges, (2) node-to-passage mappings, (3) node embeddings for query-time entity linking, and (4) node specificity scores (IDF-like weights). The PPR algorithm itself — igraph's `personalized_pagerank()` — is completely graph-agnostic. **However, no adapter layer or API exists for external graph injection**, and no fork or implementation was found that uses HippoRAG with a pre-existing graph. GitHub issue #153 (August 2025) explicitly requests Neo4j/Milvus integration with no resolution.
+
+Five specific modifications would be needed to feed your Postgres graph into HippoRAG's retrieval:
+
+- **Graph loading adapter** replacing `create_graph.py`: Read nodes/edges from Postgres, construct igraph object. Map your typed relationships to edges (HippoRAG uses schemaless string-labeled relations).
+- **Embedding generation**: Every entity node needs a dense vector using HippoRAG's embedding model (NV-Embed-v2 in v2) for query-time entity linking via cosine similarity.
+- **Passage provenance mapping**: This is the biggest obstacle. HippoRAG retrieves *passages*, not entities. Your findings are the "passages" — each finding node needs a direct mapping so PPR scores aggregate correctly.
+- **Edge weights for typed relations**: HippoRAG v1 treats all edges uniformly. For typed relationships, assign edge weights by relation type to bias PPR traversal. Gallo et al. ("Personalized Page Rank on Knowledge Graphs: Particle Filtering is all you need!", EDBT 2020; **peer-reviewed**) implements exactly this — multi-source, edge-weighted, top-k PPR on pre-existing knowledge graphs (DBpedia, DrugBank) as a Neo4j stored procedure, achieving **NDCG >0.8** for queries with up to 10 source nodes.
+- **Node specificity**: Compute IDF based on how many relationships each node participates in, rather than passage occurrence.
+
+The more practical path may be to implement PPR directly on your Postgres graph without HippoRAG's codebase. LEGO-GraphRAG (Cao et al., VLDB 2025; **peer-reviewed**) benchmarks PPR as a subgraph extraction method on Freebase (a pre-existing KG) and finds it is "the current optimal solution for structure-based extraction" with better F1 and recall than random walk alternatives. GRAFT-Net (Sun et al., EMNLP 2018; **peer-reviewed**) similarly uses PPR for score propagation over heterogeneous graphs combining Freebase facts with entity-linked text. Both validate PPR retrieval on pre-existing KGs without LLM extraction.
+
+## 3. Cross-domain diversity traversal is theoretically solved but not yet integrated with RAG
+
+Your specific retrieval pattern — starting from selected findings, traversing typed relationships to discover findings in *different* cultural domains sharing the same anxiety tags — is a 2–3 hop traversal with a domain-diversity constraint. This pattern sits at the intersection of three research areas that have not been connected in any published system.
+
+**Diversity-constrained graph pattern matching** has rigorous algorithmic foundations. Fan et al. ("Diversified Top-k Graph Pattern Matching," PVLDB 6(13), 2013; **peer-reviewed**) formalize bi-criteria optimization between relevance functions δr() and distance functions δd(), with algorithms in O(|G||Q| + |G|²). The distance function can directly encode domain diversity. Mahfoud ("A scalable local-search approximation for diversity-aware querying in large graphs," Journal of Supercomputing, 2025; **peer-reviewed**) extends this specifically to **Cypher query language on Neo4j**, proving NP-hardness and providing practical algorithms. Li et al. ("Efficient Partition-based Approaches for Diversified Top-k Subgraph Matching," PVLDB 19(4), 2025; **peer-reviewed**) introduce DT_kSM for retrieving maximally dispersed subgraph matches.
+
+**Diversity-aware retrieval for RAG** is emerging separately. DF-RAG ("Query-Aware Diversity for Retrieval-Augmented Generation," arXiv 2601.17212, 2025; **pre-print**) dynamically adjusts the diversity parameter λ per query, building on Maximal Marginal Relevance (Carbonell & Goldstein, SIGIR 1998; **peer-reviewed**). Oracle-tuned λ per query surpasses vanilla RAG on HotpotQA and MuSiQue. Multi-Head RAG (Besta et al., arXiv 2406.05085; **pre-print**) uses multi-head attention activations to create aspect-diverse embeddings, achieving **20% improvement in retrieval success** and generating **15.4 vs 11.2 factual items per query** compared to standard RAG.
+
+**Graph-guided retrieval for synthesis** (not QA) has limited but growing evaluation. KG²RAG (Zhu et al., NAACL 2025; **peer-reviewed**) uses KG-chunk association for "KG-guided chunk expansion" — graph traversal to include chunks with overlapping entities — improving both diversity and coherence of retrieved results. RichRAG (Wang et al., COLING 2025; **peer-reviewed**) explicitly targets "rich and long-form answers covering multiple relevant aspects" using a sub-aspect explorer and multi-faceted retriever. ParallaxRAG (arXiv 2510.15552, 2025; **pre-print**) enforces relational diversity across multiple retrieval heads with Pairwise Similarity Regularization; removing PSR reduces Macro-F1 by **0.73–1.21 points**.
+
+**No published recursive CTE patterns incorporate diversity constraints.** For your use case, the practical approach is a two-stage pipeline: (1) graph traversal via recursive CTE to collect candidate findings sharing anxiety tags across domains, (2) application-level MMR-style reranking to maximize domain coverage. A sketch of the traversal:
+
+```sql
+WITH RECURSIVE related AS (
+  SELECT f.id, f.domain, f.anxiety_tags, 1 AS depth
+  FROM findings f
+  JOIN relationships r ON r.source_id = ANY($selected_ids)
+    AND r.target_id = f.id
+  WHERE f.domain != ANY($source_domains)
+    AND f.anxiety_tags && $target_anxiety_tags
+  UNION ALL
+  SELECT f.id, f.domain, f.anxiety_tags, rel.depth + 1
+  FROM related rel
+  JOIN relationships r ON r.source_id = rel.id AND r.target_id = f.id
+  JOIN findings f ON f.id = r.target_id
+  WHERE rel.depth < 3
+    AND f.domain != ANY($source_domains)
+)
+SELECT DISTINCT ON (domain) id, domain, anxiety_tags
+FROM related ORDER BY domain, depth;
+```
+
+The `DISTINCT ON (domain)` clause provides basic diversity. For more sophisticated diversity optimization, apply MMR post-processing in application code — which is standard practice, as the NP-hardness result from Mahfoud (2025) confirms that optimal diversification cannot be efficiently embedded in the query itself.
+
+## 4. Tag-conditioned cluster summaries outperform discovery-from-scratch at this scale
+
+GraphRAG's community summary generation uses a structured prompting pattern requesting JSON output with TITLE, SUMMARY, DETAILED_FINDINGS (5–10 key insights), and RATING, with all claims grounded via data citations in `[Data: Entities (ids); Relationships (ids)]` format. The prompt includes domain-tailored few-shot examples. This bottom-up recursive approach summarizes leaf communities from entity descriptions and relationships, then rolls up to higher levels when sub-community details exceed the token budget.
+
+**RAPTOR** (Sarthi et al., "Recursive Abstractive Processing for Tree-Organized Retrieval," ICLR 2024; **peer-reviewed**, Stanford) provides the strongest comparison. RAPTOR clusters using Gaussian Mixture Models on SBERT embeddings (with UMAP dimensionality reduction and BIC-determined cluster counts), then recursively summarizes clusters. On QuALITY, RAPTOR+GPT-4 achieves **82.6% accuracy vs 62.3%** for the best baseline (CoLT5) — a **20-percentage-point absolute improvement**. Its ablation confirms that removing intermediate summary layers and retrieving only from leaves degrades performance, proving summary nodes contribute meaningful context. The collapsed-tree approach (flattening all layers for cosine similarity retrieval) outperforms top-down tree traversal.
+
+**No published study directly compares auto-generated vs. hand-written cluster summaries as routing indices.** The closest evidence comes from RECOMP (Xu, Shi, Choi, ICLR 2024; **peer-reviewed**), which demonstrates that **task-optimized summaries significantly outperform off-the-shelf summarization** — achieving **6% compression rate** with minimal performance loss. The critical insight: summaries optimized for retrieval routing differ from generally "good" summaries. A separate caution comes from Zeng et al. ("How Significant Are the Real Performance Gains?", arXiv 2506.06331, 2025; **pre-print**), who found that GraphRAG's reported LLM-as-a-judge gains are inflated by position bias, length bias, and trial bias — after correction, some advantages "vanished."
+
+For your anxiety × domain tag structure, the optimal approach skips community detection entirely and generates summaries directly conditioned on tag intersections. Your two-dimensional tag structure (5 anxiety categories × N cultural domains) naturally creates a routing matrix. For each cell, prompt the LLM with all findings in that intersection plus their relationship metadata, using GraphRAG's structured output format. This produces summaries that are inherently semantically coherent — unlike Leiden-derived communities, which ArchRAG (AAAI 2025) showed can mix unrelated themes.
+
+Following RAPTOR's design, consider generating summaries at multiple granularities: per-anxiety-category, per-domain, and per-intersection. The collapsed-tree retrieval approach (cosine similarity across all granularity levels simultaneously) outperformed hierarchical traversal in RAPTOR's experiments. Per the health-risk-assessment RAG ablation (MDPI Electronics, 2025; **peer-reviewed**), removing summary retrieval caused performance drops of up to **7.9%**, confirming that summaries provide measurable downstream value even alongside chunk-level retrieval.
+
+## 5. PostgreSQL recursive CTEs are the clear choice at 300–5000 nodes
+
+**At this scale, no benchmark, academic paper, or practitioner report shows Neo4j providing meaningful performance advantages.** The most directly relevant practitioner case (Micelclaw, dev.to, March 2025; **blog post**) describes an almost identical scenario — a personal knowledge graph with <10K nodes, <50K edges, typed relationships, and multi-hop traversals — and concludes: "At depth 2 with 10K nodes, this query returns in **under 10ms**. The performance argument for a graph engine simply doesn't exist." The author formally rejected both Neo4j and Apache AGE via an Architecture Decision Record, using just two tables (`graph_entities` + `entity_links`) with three recursive CTE patterns covering all needs.
+
+The University of Washington benchmark (Sikhinam, 2020; **academic course project**) compared Neo4j and Postgres on TPC-H at 1GB and 10GB scales. Postgres outperformed Neo4j in almost every query. Neo4j ran out of memory on 4/7 queries under 1GB RAM constraints and used **~10× more disk**. Performance benefits appeared "only for large datasets and joins involving more than 5 tables." The AMIA healthcare study (Stothers & Nguyen, 2020; **peer-reviewed**, PMC7233060) found Cypher commands were "almost universally shorter with fewer clauses" but Neo4j relationship creation was dramatically slower: creating 3,432 relationships took **8,948,044 ms (2.5 hours)**.
+
+Cypher is genuinely **2–3× more concise** for graph traversals — a 2-hop typed traversal is ~5 lines in Cypher vs ~15 lines in a recursive CTE. But at 2–3 hops with known relationship types, the SQL approach remains well within maintainability limits. The conciseness advantage grows at 4+ hops or with highly variable path patterns, which are not the primary use case here.
+
+The performance crossover point, synthesized across all sources, falls at approximately **50,000+ nodes with 4+ hop traversals**. The Neo4j In Action benchmark shows dramatic advantages only at depth 4+ with 1M nodes. Alibaba Cloud demonstrated Postgres handling **10 million nodes with 3-hop shortest path in 7.9ms**. Even Tropology (numergent.com, 2015; **blog post**), which migrated *from* Neo4j *to* PostgreSQL at 222K nodes and 11.5M relationships, achieved an **8× import throughput improvement** and reduced multi-second Neo4j queries to **<300ms** in Postgres.
+
+Neo4j's operational overhead is substantial: separate JVM service requiring 512MB–2GB minimum heap, different backup tooling, JVM GC tuning, separate monitoring stack, and limited ORM support. Apache AGE (graduated Apache top-level project, 2022) could serve as a future middle ground, adding Cypher syntax without a separate database, but no published performance benchmarks of AGE vs. Neo4j exist — GitLab issue #526014 shows even major organizations haven't completed this comparison.
+
+**Recommendation:** Stay with PostgreSQL. Implement a two-table schema (`findings` + `relationships`) with indexes on `(source_id, relationship_type)` and `(target_id, relationship_type)`. The three CTE patterns (expansion, path-finding, subgraph extraction) cover all retrieval needs at sub-10ms latency. Consider Apache AGE only if query complexity regularly exceeds ~50 lines of SQL. Consider Neo4j only above 50K nodes with 5+ hop traversals.
+
+## Conclusion: an architecture that fits the problem
+
+The research points to a specific architecture for this use case that avoids the common mistake of over-engineering with tools designed for larger problems. **Use your existing Postgres schema and tags directly** — they already encode the community structure that Leiden would attempt to rediscover, imperfectly. **Implement PPR as a lightweight retrieval algorithm** on your graph, either via a Python igraph implementation or Postgres-side computation, drawing on Gallo et al.'s (EDBT 2020) approach for edge-weighted PPR on pre-existing KGs. **Generate tag-conditioned cluster summaries** using GraphRAG's structured prompting format, applied to your anxiety × domain tag intersections, at multiple granularities following RAPTOR's design. **Apply MMR-style diversity reranking** post-retrieval to ensure cross-domain coverage in retrieved context for essay generation.
+
+The most important gap identified across all five questions is **the absence of evaluation benchmarks for cross-domain analytical synthesis** — as distinct from QA. GraphRAG-Bench (ICLR 2026) includes creative generation tasks, but no benchmark evaluates the specific pattern of traversing structural similarities across topically distant domains for long-form essay generation. This means any implementation should include a custom evaluation set: a golden dataset of expected cross-domain connections and essay quality criteria, measured before and after each architectural choice. Multiple practitioner sources converge on this advice: build the evaluation harness before adopting any new retrieval method.

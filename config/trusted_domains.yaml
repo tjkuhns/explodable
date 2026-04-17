@@ -1,0 +1,262 @@
+# Trusted source domains for citation resolution.
+#
+# Used by scripts/backfill_manifestation_urls.py and (eventually) the live
+# citation processor to decide whether a search-engine hit is credible
+# enough to footnote. If a URL's host isn't on one of these lists, we'd
+# rather show "URL pending" than risk citing a blog aggregator.
+#
+# Tiers are searched in priority order — academic first, then gov/think
+# tanks, then business press, then journalism, then practitioner. The
+# first tier that returns a title-matching hit wins.
+#
+# To add a domain: append it to the appropriate tier. Use root domains
+# (hbr.org, not www.hbr.org). Subdomains are matched automatically via
+# the `.domain/` check in _is_authoritative_url.
+
+tiers:
+  # ── Tier 1: academic publishers, indexes, preprint servers ──
+  academic:
+    - doi.org
+    - pubmed.ncbi.nlm.nih.gov
+    - ncbi.nlm.nih.gov
+    - pmc.ncbi.nlm.nih.gov
+    - semanticscholar.org
+    - scholar.google.com
+    - arxiv.org
+    - ssrn.com
+    - papers.ssrn.com
+    - osf.io
+    - biorxiv.org
+    - medrxiv.org
+    - psyarxiv.com
+    # Major publishers
+    - nature.com
+    - science.org
+    - sciencemag.org
+    - sciencedirect.com
+    - springer.com
+    - link.springer.com
+    - wiley.com
+    - onlinelibrary.wiley.com
+    - tandfonline.com
+    - sagepub.com
+    - journals.sagepub.com
+    - cambridge.org
+    - oup.com
+    - academic.oup.com
+    - mitpressjournals.org
+    - mitpress.mit.edu
+    - journals.uchicago.edu
+    - plos.org
+    - journals.plos.org
+    - frontiersin.org
+    - mdpi.com
+    - elsevier.com
+    # Psychology / behavioral specialty
+    - apa.org
+    - psycnet.apa.org
+    - psychologicalscience.org
+    - behavioralscientist.org
+    # Economics / finance specialty
+    - aeaweb.org
+    - nber.org
+    - econlit.org
+    # Indexes & identifiers
+    - orcid.org
+    - crossref.org
+    - openalex.org
+
+  # ── Tier 2: universities (.edu already matched by TLD fallback, but
+  #           explicit listing catches .ac.uk / .ac.jp and lets us
+  #           prefer them in ranking) ──
+  universities:
+    - stanford.edu
+    - mit.edu
+    - harvard.edu
+    - berkeley.edu
+    - yale.edu
+    - princeton.edu
+    - uchicago.edu
+    - columbia.edu
+    - upenn.edu
+    - wharton.upenn.edu
+    - cmu.edu
+    - hbs.edu
+    - gsb.stanford.edu
+    - kellogg.northwestern.edu
+    - northwestern.edu
+    - jhu.edu
+    - duke.edu
+    - cornell.edu
+    - nyu.edu
+    - ucla.edu
+    - usc.edu
+    - umich.edu
+    - dartmouth.edu
+    - brown.edu
+    - ox.ac.uk
+    - cam.ac.uk
+    - lse.ac.uk
+    - imperial.ac.uk
+    - ucl.ac.uk
+    - ed.ac.uk
+    - insead.edu
+    - london.edu
+
+  # ── Tier 3: think tanks, research institutes, foundations ──
+  think_tank:
+    - brookings.edu
+    - pewresearch.org
+    - rand.org
+    - urban.org
+    - kff.org
+    - rwjf.org
+    - ifs.org.uk
+    - resolutionfoundation.org
+    - conference-board.org
+    - americanprogress.org
+    - heritage.org
+    - aei.org
+    - cato.org
+    - manhattan-institute.org
+    - heritagefoundation.org
+    - ssrc.org
+    - bertelsmann-stiftung.de
+    - iza.org
+
+  # ── Tier 4: government statistical & regulatory agencies ──
+  gov_stats:
+    - bls.gov
+    - federalreserve.gov
+    - census.gov
+    - bea.gov
+    - cdc.gov
+    - nih.gov
+    - nist.gov
+    - sec.gov
+    - fec.gov
+    - cbo.gov
+    - gao.gov
+    - usda.gov
+    - epa.gov
+    - energy.gov
+    - doj.gov
+    - ftc.gov
+    - fda.gov
+    - hhs.gov
+    - dol.gov
+    - commerce.gov
+    - ed.gov
+    - treasury.gov
+    # International
+    - europa.eu
+    - ec.europa.eu
+    - ecb.europa.eu
+    - eurostat.ec.europa.eu
+    - ons.gov.uk
+    - gov.uk
+    - bankofengland.co.uk
+    - oecd.org
+    - worldbank.org
+    - imf.org
+    - un.org
+    - who.int
+    - wto.org
+
+  # ── Tier 5: business press, management research, analyst firms ──
+  business_press:
+    - hbr.org
+    - sloanreview.mit.edu
+    - knowledge.wharton.upenn.edu
+    - insight.kellogg.northwestern.edu
+    - strategy-business.com
+    # Consulting research publications
+    - mckinsey.com
+    - bcg.com
+    - bain.com
+    - deloitte.com
+    - deloitte.com/insights
+    - pwc.com
+    - ey.com
+    - kpmg.com
+    - accenture.com
+    - oliverwyman.com
+    - kornferry.com
+    # Analyst firms
+    - gartner.com
+    - forrester.com
+    - idc.com
+    - 451research.com
+    - gartner.co.uk
+
+  # ── Tier 6: quality journalism (use with context —
+  #           secondary source, not primary research) ──
+  journalism:
+    - nytimes.com
+    - wsj.com
+    - ft.com
+    - economist.com
+    - bloomberg.com
+    - reuters.com
+    - apnews.com
+    - theatlantic.com
+    - newyorker.com
+    - propublica.org
+    - theguardian.com
+    - washingtonpost.com
+    - npr.org
+    - bbc.com
+    - bbc.co.uk
+    - vox.com
+    - wired.com
+    - technologyreview.com
+    - fastcompany.com
+    - inc.com
+    - fortune.com
+    - businessinsider.com
+    - axios.com
+    - politico.com
+    - nationalaffairs.com
+    - quillette.com
+
+  # ── Tier 7: data & survey research vendors ──
+  data_research:
+    - gallup.com
+    - statista.com
+    - cbinsights.com
+    - crunchbase.com
+    - pitchbook.com
+    - edelman.com
+    - nielsen.com
+    - kantar.com
+    - ipsos.com
+    - yougov.com
+    - morningconsult.com
+    - ycombinator.com
+    - stackoverflow.com/survey
+
+  # ── Tier 8: B2B sales/marketing practitioner sources ──
+  #           (narrow — these are specifically the vendors producing
+  #           credible original research, not content-marketing blogs) ──
+  practitioner_b2b:
+    - clozd.com
+    - corporatevisions.com
+    - jolteffect.com
+    - challengerinc.com
+    - gong.io
+    - gongio.com
+    - chorus.ai
+    - outreach.io
+    - salesloft.com
+    - hubspot.com
+    - salesforce.com
+    - rainsalestraining.com
+    - primaryintelligence.com
+    - saleshacker.com
+    - winlossroi.com
+    - thirdside.co
+    - drift.com
+    - april-dunford.com
+    - aprildunford.com
+    - davidcbaker.com
+    - punctuation.com

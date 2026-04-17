@@ -1,0 +1,33 @@
+# What your RAG stack is probably missing
+
+**The most important thing you haven't considered: your entire KB likely fits in Claude's context window, making traditional RAG optional.** At ~300 records averaging 500 tokens each, you're looking at ~150K tokens — within Claude's 200K limit. Cache-Augmented Generation (CAG) with Anthropic's prompt caching eliminates chunking, embedding, and retrieval entirely while cutting input costs 90%. Everything below is worth knowing, but evaluate it against this baseline.
+
+## RAG architectures that actually matter at 300 records
+
+Most 2025 RAG innovations solve scale problems you don't have. **Corrective RAG's** web-search fallback is irrelevant for a curated KB; **Self-RAG** requires custom model fine-tuning; **tree-of-thought retrieval** remains academic vaporware. Three patterns are worth stealing:
+
+**Agentic RAG loops** have genuine production traction — LangGraph's official tutorials now treat the route→retrieve→grade→rewrite cycle as canonical. This is the orchestration pattern that ties your SetR selection, slot-based retrieval, and metadata filtering into a decision graph with automatic query rewriting on low-confidence retrievals. Not a new architecture so much as the right way to wire yours together. **HyPE** (Hypothetical Passage Embeddings) inverts HyDE — at index time, generate hypothetical questions each record could answer and embed those alongside the document. One-time offline cost, complements your Contextual Retrieval embeddings, reported **42pp precision improvements** in some benchmarks ([arXiv:2507.16754](https://arxiv.org/abs/2507.16754)). Simple **2-step iterative retrieval** (retrieve → generate sub-queries from initial results → retrieve again) would help essays that synthesize across concepts like loss aversion + default effects, without the overhead of graph-based multi-hop frameworks like HopRAG.
+
+## Database alternatives: mostly overkill, one exception
+
+At 300 records, brute-force vector search completes in microseconds. The only legitimate reason to switch from Postgres+pgvector is **eliminating the server entirely**. **LanceDB** (embedded, pip-installable, file-based) is the most interesting option — used in production by Netflix, Dosu, and CodeRabbit, with zero operational overhead. **sqlite-vec** offers maximum simplification if you want a single-file database. Everything else — Weaviate, Vespa, Turbopuffer ($64/month minimum) — is comically overscaled. **SurrealDB** deserves a footnote as the only database natively combining vector + graph + structured queries in one engine, relevant if you want graph relationships between behavioral science concepts without a separate graph layer, but it carries real maturity risk.
+
+## Embedding models: Qwen3 is the free upgrade you should know about
+
+**Qwen3-Embedding-0.6B** (Apache 2.0, June 2025) matches BGE-M3's parameter count but scores **64.3 vs. 59.6 on MMTEB** — a meaningful retrieval quality gain at zero cost. It's instruction-aware, letting you prefix queries with domain-specific task descriptions. **Voyage-context-3** is the most innovative model for structured content: it processes entire documents in a single pass and generates per-chunk embeddings that capture global context, outperforming Jina v3's late chunking by **23.7%**. No production embedding model handles structured metadata fields natively — every approach reduces to text concatenation. At 300 records, **a reranker (Cohere Rerank, BGE-reranker) after dense retrieval will improve quality more than switching embedding models**.
+
+## Tooling that directly reduces your review burden
+
+**DSPy with MIPROv2** is the highest-impact tool you haven't mentioned. Define classifier signatures, feed in your editorial judgments as examples, and the optimizer automatically discovers optimal prompts and few-shot selections. Intel demonstrated accuracy jumping from **35% to 78%** with DSPy optimization. It integrates with Claude via `dspy.LM("anthropic/claude-3-opus")` and exports optimized modules for deployment in your FastAPI endpoints. **SetFit** (Hugging Face + Intel Labs) trains competitive classifiers from **8 labeled examples per class** in ~30 seconds — no prompts, no LLM calls at inference. Combine both: SetFit as a fast pre-classifier, routing only low-confidence cases to Claude, then DSPy-optimized prompts for the hard cases. LangGraph's **`interrupt` primitive** (December 2024) and **node-level caching** (May 2025) directly simplify your manual review gates — `interrupt` pauses execution for human input without blocking threads, and caching avoids re-running classifiers on unchanged records.
+
+## ⚠️ The approaches that might restart your plan
+
+**Cache-Augmented Generation** is the finding most likely to change your architecture. The paper "Don't Do RAG" (Chan et al., [arXiv:2412.15605](https://arxiv.org/abs/2412.15605), accepted ACM Web Conference 2025) showed CAG matches or beats RAG on SQuAD and HotPotQA for constrained KBs. With Anthropic prompt caching, your ~150K-token KB gets **90% cost reduction on cached reads and 85% latency reduction**. This eliminates pgvector, embeddings, chunking, and retrieval — five failure points removed. **Karpathy's LLM Wiki pattern** (April 2026, 16M+ views) proposes having the LLM compile raw sources into a structured, cross-referenced Markdown wiki with an index — the LLM reads the index, selects relevant articles, and generates. He operates at ~100 articles, nearly your scale. No vector database, no embeddings, fully auditable plain text.
+
+## Top 3 things to investigate before committing
+
+1. **CAG + Anthropic prompt caching** — prototype in 1-2 days. Serialize your KB into Claude's system prompt with `cache_control`. If 300 records fit in context (likely), you can eliminate the entire retrieval pipeline and keep LangGraph only for essay orchestration. This is a potential plan-restarter.
+
+2. **DSPy + SetFit for classifier automation** — directly addresses your biggest operational pain (manual review on classifier backfills). DSPy optimizes your Claude prompts from editorial examples; SetFit gives you a fast, free pre-classifier from 8 labels per class. Together they could reduce manual review by **80-90%**.
+
+3. **Qwen3-Embedding-0.6B as a BGE-M3 replacement** — if you keep vector retrieval, this is a free, Apache-licensed, same-size model with meaningful quality gains and instruction-awareness for domain-specific queries.

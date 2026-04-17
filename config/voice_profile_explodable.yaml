@@ -1,0 +1,640 @@
+# Voice Profile — Explodable (explodable.io)
+# Version: 1.1
+# Last updated: April 2026
+# Changes from 1.0: humor parameter raised 1.5→2.0 with loosened frequency guidance;
+#   forwarding_artifact requirement added to newsletter patterns;
+#   parallel_production_cadence added to brand_relationships.
+# Usage: Website copy, Explodable newsletter, LinkedIn, outreach materials, Decision Diagnostic and Deep Analysis Project deliverables
+# Schema: Mirrors canonical Explodable brand voice profile structure.
+# Note: This is NOT The Boulder. Different audience, different register, different job.
+#       The Boulder exists to provoke curiosity. Explodable exists to open conversations
+#       with revenue leaders who are already in pain and already skeptical.
+
+brand:
+  name: "Explodable"
+  tagline: "Diagnosis, not methodology."
+  problem_solved: >
+    B2B revenue leaders are losing deals they should win and can't diagnose why.
+    Standard research tells them what buyers say. It doesn't tell them what buyers fear.
+  audience: "Fractional CMOs (as content audience and referral channel) and end clients at $30M–$100M ARR B2B SaaS (as commercial buyer)"
+  audience_description: >
+    Split audience. The CONTENT audience and referral channel is fractional CMOs
+    serving B2B SaaS at $10M–$100M ARR (~1,000–3,000 US practitioners). They read
+    the content, trade findings in peer communities, and recommend Explodable to
+    the end clients they serve. They are not the direct commercial buyer — the
+    economics don't support it (a $5–8K/month retainer would consume 18–50% of
+    their gross revenue) and they position themselves as the analytical layer for
+    their clients. The COMMERCIAL buyer is the end client — B2B SaaS companies at
+    $30M–$100M ARR (primary) that have retained fractional marketing leadership.
+    At $30M ARR with ~8% marketing spend (~$2.4M budget), a $15K Decision Diagnostic
+    is under 1% of budget and sits within VP-level discretionary sign-off.
+    This is the April Dunford pattern: the fractional CMO identifies the analytical
+    need, recommends Explodable, the company contracts and pays directly. The
+    reader — fractional CMO — is typically 10–20 years experienced, former in-house
+    marketing leader, operating across 2–3 concurrent client engagements at
+    $8K–$15K/month each, making ICP/positioning/messaging decisions based on pattern
+    recognition rather than primary research, acutely aware of the gap between their
+    recommendations and the data that would back them up, under 30–90 day pressure
+    to prove value in every new engagement. Skeptical of vendors because they are
+    themselves marketers — they see every tactic for what it is. Buy and refer
+    through peer relationships. Respond to precision and specificity, not to empathy
+    performance. Will forward something that makes their client's CEO ask "where
+    did you get this?" Secondary content audience: VP Marketing, VP Sales, Head of
+    Product Marketing at B2B SaaS $30M–$100M ARR — the in-house analog, reached
+    through the same content.
+  primary_content_surface: "explodable.io website, Explodable newsletter, LinkedIn, Decision Diagnostic and Deep Analysis Project deliverables"
+  relationship_to_boulder: >
+    The Boulder is the public intellectual arm — long-form, absurdist, philosophical.
+    Explodable is the commercial arm — direct, evidenced, diagnostic.
+    They share one founder. They do not share a voice.
+
+# ─────────────────────────────────────────────
+# TONE PARAMETERS
+# All scales are 1–5 where 1 = lowest, 5 = highest
+# ─────────────────────────────────────────────
+tone:
+  formality: 3.5
+  formality_description: >
+    Controlled professional. The tone of a senior consultant who has stopped performing
+    seniority. Precise vocabulary. No jargon for status. No casual for relatability.
+    Sounds like someone who has thought about this for a long time and is now telling
+    you exactly what they found — not performing expertise, demonstrating it.
+    Formal enough to email to a CRO. Direct enough to not sound like a consultant.
+
+  humor: 2.0
+  humor_description: >
+    Dry and deliberate. Never performed. Used once per long-form piece — but when
+    it appears, it should be a real line, not a reluctant concession.
+    The register is devastating understatement or blunt naming of an industry
+    absurdity. It works because everything around it is serious.
+    "Your CRM loss reasons are a fiction your team writes to avoid an uncomfortable
+    conversation" carries wit precisely because it's also just accurate.
+    A single line with edge does more trust work than three paragraphs of credentials —
+    it signals the writer is not afraid of the room.
+    Frequency rule: once per piece minimum, once per piece maximum.
+    The joke is always structural — it comes from precision of observation, not from
+    trying to be funny. If you're trying, it's wrong.
+
+  earnestness: 4.5
+  earnestness_description: >
+    High stakes earnestness. This is not ironic distance. Not detachment.
+    The voice genuinely believes the problem it's solving matters, believes the ICP
+    is capable of acting on what they learn, and is not trying to impress them —
+    it is trying to be useful to them. The closest register: a doctor who has
+    the test results and is telling you clearly what they mean.
+    No hedging. No "it depends." Confident, evidenced, direct.
+
+  urgency: 3.5
+  urgency_description: >
+    Latent urgency. Not manufactured scarcity. The urgency is structural — deals
+    are dying right now, buyers are going dark right now, your next quarter is
+    being shaped by psychological mechanisms you can't see. The writing doesn't
+    say "act now." It says "this is already happening." The reader supplies the urgency
+    themselves because the evidence is specific enough to be real.
+
+  contrarianism: 4.0
+  contrarianism_description: >
+    Evidence-backed contrarianism. Not contrarian for positioning purposes.
+    Contrarian because the evidence keeps landing on the uncomfortable side of
+    common assumptions. "Your buyers aren't budget-constrained — they're risk-averse."
+    "The 'no decision' loss isn't indifference — it's a specific fear." 
+    Every contrarian claim must be followed by its evidence. Contrarianism without
+    evidence is just attitude. With evidence, it's diagnosis.
+
+# ─────────────────────────────────────────────
+# STRUCTURAL PARAMETERS
+# ─────────────────────────────────────────────
+structure:
+  avg_sentence_length_words: 14
+  sentence_length_range_words: [6, 24]
+  sentence_length_description: >
+    Shorter than The Boulder. The ICP skims first, reads second.
+    Short sentences (6–10 words) for claims and findings. Medium sentences
+    (14–18 words) for evidence and mechanism. Occasional longer sentence (20–24)
+    for synthesis. Never three long sentences in a row.
+    Rhythm pattern: Claim. Evidence. Implication. New paragraph.
+
+  avg_paragraph_length_sentences: 3
+  paragraph_length_range_sentences: [1, 4]
+  paragraph_length_description: >
+    Same ceiling as The Boulder, different reason. The Boulder uses white space
+    for rhythm. Explodable uses it for scanability. The ICP reads on mobile,
+    between meetings, with 40 open tabs. Three sentences maximum. Four is pushing it.
+    Single-sentence paragraphs for findings only — when the finding deserves to
+    stand alone.
+
+  reading_level_flesch_kincaid_grade: 10
+  reading_level_range: [9, 11]
+  reading_level_description: >
+    One grade below The Boulder. Not because the audience is less intelligent —
+    they're often smarter. Because they have less patience. Every extra word is
+    a word they're deciding not to read. Vocabulary is precise but never obscure.
+    "Status quo bias" is fine. "Thanatophobia" is not. Use the clinical term
+    when it's the most accurate term. Use the plain term when it does the same job.
+
+  skim_architecture:
+    required: true
+    description: >
+      Every piece must have a skim layer. The first sentence of every paragraph
+      must carry the full weight of the paragraph's claim — a reader who reads
+      only the first sentence of each paragraph should understand the full argument.
+      This is non-negotiable for the website. For the newsletter, it applies to
+      section openers. The ICP will skim before they commit to reading.
+
+# ─────────────────────────────────────────────
+# VOCABULARY
+# ─────────────────────────────────────────────
+vocabulary:
+  preferred_terms:
+    - "diagnose / diagnosis / diagnostic"      # core brand verb — use deliberately
+    - "mechanism"                              # implies precision and causation
+    - "finding"                                # implies evidence, not opinion
+    - "driver"                                 # as in what's driving behavior
+    - "stall"                                  # exactly what buyers do; the ICP uses this word
+    - "surface"                                # as in "what surfaces in the research"
+    - "pattern"                                # implies cross-case evidence
+    - "pipeline"                               # ICP's vocabulary; use their words
+    - "deal"                                   # never "sale" or "opportunity" — say deal
+    - "buyer"                                  # not "customer" or "prospect" — buyer
+    - "fear"                                   # call it what it is
+    - "anxiety"                                # specific; not "concern" or "hesitation"
+    - "evidence"                               # always reference it; never "suggests" alone
+    - "layer"                                  # as in psychological layer beneath stated reason
+    - "cross-domain"                           # the actual differentiator; say it deliberately
+
+  preferred_constructions:
+    - >
+        "The research shows X. The implication is Y." — Evidence → implication, always paired.
+    - >
+        "[Behavior the ICP has seen] is not [what they think it is]. It's [what it actually is]."
+        The reframe pattern. Use when introducing a finding.
+    - >
+        "Most [standard solution] measures [X]. It doesn't measure [Y]."
+        The gap frame. Positions Explodable without naming competitors.
+    - >
+        "Finding: [one sentence, declarative, specific]." — For newsletter and deliverable
+        formatting. Not for website prose, but for pull quotes and research samples.
+
+  icp_vocabulary_to_use:
+    description: >
+      The ICP has a specific vocabulary. Use their words. When their word is precise enough,
+      prefer it over a more clinical synonym.
+    terms:
+      - "pipeline"
+      - "win rate"
+      - "sales cycle"
+      - "buying committee"
+      - "deal velocity"
+      - "no decision"
+      - "stalled deal"
+      - "messaging"
+      - "positioning"
+      - "battlecard"
+      - "enablement"
+      - "ICP"                 # when referring to their ICP, not ours
+      - "champion"
+      - "economic buyer"
+      - "engagement"          # how fractional CMOs describe client relationships — never "contract"
+      - "ICP"                 # they use the acronym constantly; never spell it out
+      - "positioning"         # core deliverable they're hired to fix
+      - "execution gap"       # the painful distance between strategy and what actually gets done
+      - "pipeline contribution" # what boards hold them accountable to
+      - "first 90 days"       # the proving window that defines every new engagement
+      - "pattern recognition" # how they describe their own value to clients
+      - "board meeting"       # the moment of maximum exposure; use it to anchor stakes
+      - "retainer"            # their business model word; use it when discussing pricing
+      - "quick wins"          # what clients demand in weeks 2–3; they use this phrase
+
+  banned_words_absolute:
+    - "innovative"
+    - "passionate"
+    - "disruptive"
+    - "game-changing"
+    - "cutting-edge"
+    - "best-in-class"
+    - "world-class"
+    - "unique"              # as generic modifier; fine if specifically accurate
+    - "leverage"            # as verb
+    - "unlock"
+    - "transform"           # as marketing verb
+    - "empower"
+    - "holistic"
+    - "seamless"
+    - "robust"
+    - "synergy"
+    - "ecosystem"           # in the startup-marketing sense
+    - "journey"             # in the buyer/customer journey marketing sense — use "process" or "decision"
+    - "storytelling"        # as a strategy noun
+    - "authentic"           # self-applied
+    - "thought leader"      # self-applied
+    - "deep dive"
+    - "unpack"
+    - "circle back"
+    - "double click"
+    - "move the needle"
+    - "boil the ocean"
+    - "drink the Kool-Aid"
+    - "it goes without saying"
+    - "at the end of the day"
+    - "in today's landscape"
+    - "in today's world"
+    - "now more than ever"
+    - "In conclusion"
+    - "To summarize"
+    - "In this article/post/piece"
+    - "We're excited to..."
+    - "I'm thrilled to..."
+    - "any exclamation mark in body copy"  # CTA buttons excepted, reluctantly
+    - "solution"            # generic vendor word; triggers immediate dismissal
+    - "consultant"          # they have spent enormous energy NOT being a consultant
+    - "scale your practice" # sounds like a coaching upsell, not a peer relationship
+    - "unlock insights"     # meaningless filler
+    - "demo"                # they want to see output, not a product tour
+    - "deliverable"         # use "Brief" or "report" — deliverable sounds like agency-speak
+
+  banned_constructions:
+    - >
+        "We help [ICP] [achieve/improve/optimize] [outcome]."
+        The generic value prop sentence. Replace with the specific problem + mechanism.
+    - >
+        "Our [methodology/approach/framework] enables..."
+        Methodology-first framing. Lead with the problem or the finding.
+    - >
+        "As a [title], you know that..."
+        Patronizing. Never tell the reader what they know.
+    - >
+        "Whether you're a [X] or a [Y]..."
+        Inclusivity hedge. Pick an audience and speak to them.
+    - >
+        Rhetorical questions as openers. ("Have you ever wondered why...?")
+        Sounds like a webinar. Not a diagnosis.
+
+# ─────────────────────────────────────────────
+# STRUCTURAL PATTERNS BY SURFACE
+# ─────────────────────────────────────────────
+patterns:
+  website_homepage:
+    above_the_fold:
+      opener_rule: >
+        Name the problem, not the solution. The problem should be specific enough
+        that the right reader feels implicated. The wrong reader should feel
+        mildly confused. Both reactions are correct.
+      prohibited_opener_types:
+        - "Questions"
+        - "Statistics without context"
+        - "Claims about what we do before naming what's broken"
+        - "The word 'welcome'"
+      ideal_opener_pattern: >
+        One declarative sentence naming the mechanism, not the symptom.
+        "Your pipeline problem isn't a process problem." — not "We help you
+        understand why deals stall." The mechanism frame forces curiosity.
+        The solution frame invites comparison shopping.
+
+    proof_section:
+      rule: >
+        One actual finding. Formatted as a finding, not as a claim about your findings.
+        The finding does more trust work than the description of the engine.
+        Format: "Finding: [specific claim]. [Evidence sentence]. [Implication sentence]."
+      example: >
+        Finding: When buyers cite "internal alignment issues" as a stall reason,
+        the behavioral economics literature maps this to career risk anxiety
+        in 73% of documented cases — not organizational dysfunction.
+        The deal isn't stuck. A person is afraid. Those require different responses.
+
+  newsletter:
+    opener_rule: >
+      First sentence names a specific finding, observable behavior, or data point.
+      Never a question. Never an announcement of the topic.
+      The ICP has 400 unread emails. The first sentence determines whether
+      this becomes 399.
+    body_rule: >
+      Each section = one finding + evidence + implication. No filler.
+      If a paragraph doesn't deliver a finding, evidence, or implication, cut it.
+      The newsletter is a diagnostic document, not a think piece.
+    closer_rule: >
+      End on the implication for the reader's specific situation — not a call to action,
+      not a summary. "If this pattern holds in your category, the question isn't
+      why your deal went dark. It's which type of fear you haven't addressed yet."
+    length: "600–1,200 words. Shorter than The Boulder by design. Density over length."
+    forwarding_artifact:
+      required: true
+      description: >
+        Every issue must contain one explicitly shareable finding — a single paragraph,
+        self-contained, that survives being forwarded without context.
+        The ICP reads alone. They share with their CEO, their VP Sales, their board.
+        The forwarding artifact is designed for that moment: it reads cleanly out of
+        the full piece, requires no setup, and lands the core finding in 3–5 sentences.
+        Format it as a bolded standalone block or a pull quote so it's visually
+        identifiable as the shareable unit. Do NOT prefix it with an introductory
+        label like "Forwarding artifact:" or "Shareable finding:" — those are
+        internal terms for our own benefit, not reader-facing copy. The block should
+        stand on its own without any meta-label explaining what it is.
+        Test: could this paragraph be forwarded with only "Read this." as context?
+        If yes, it works. If it requires explanation, rewrite it.
+
+  linkedin:
+    register: >
+      Same voice, compressed. The first line is everything — it's the only thing
+      most people read. Lead with the finding or the reframe. Save the evidence
+      for the second paragraph. End with one implication. No "thoughts?" No engagement bait.
+    length: "150–400 words. Three to five short paragraphs."
+    prohibited: >
+      "Hot take:", "Unpopular opinion:", "Here's what nobody tells you about...",
+      any opener that announces the format of the post rather than stating the claim.
+
+  outreach_messages:
+    register: >
+      One level more direct than the newsletter. This is a conversation, not a broadcast.
+      "I" not "we." Specific to their company or category. Three to four lines maximum.
+      The goal is one reply, not a conversion.
+    opener_rule: >
+      Line 1: One specific observation about their company, category, or recent content.
+      Real observation — not "I really enjoyed your post." Something that required
+      you to know something about them.
+    offer_rule: >
+      Never pitch the engagement. Offer a specific finding or a short analysis.
+      "I have a finding about [their category] buyers that I think is worth
+      ten minutes of your time" lands harder than "I'd love to learn more about
+      your pipeline challenges."
+
+  deliverables_sprint_reports:
+    register: >
+      The most formal surface. This is a professional document that will be shared
+      internally, possibly with a CRO or CFO. The voice stays direct and specific
+      but adds precision. Every finding numbered. Every claim cited.
+      Evidence footnoted. Implications explicit.
+    finding_format: >
+      Finding [N]: [One sentence. Declarative. The actual finding, not the category
+      of finding.]
+      Evidence: [Two to three sentences. Specific studies, frameworks, observed
+      patterns. Named, not gestured at.]
+      Mechanism: [One to two sentences. Why this happens psychologically — the causal
+      layer beneath the surface behavior.]
+      Implication for [client]: [One to two sentences. Specific to their situation,
+      not generic advice.]
+    prohibited: >
+      Generic conclusions that apply to any company ("we recommend improving
+      your messaging"). Every implication must be specific to this client's
+      category, buyers, and pipeline situation. If it could apply to anyone,
+      it's not a finding — it's filler.
+
+# ─────────────────────────────────────────────
+# ANTI-PATTERNS — WHAT EXPLODABLE NEVER DOES
+# ─────────────────────────────────────────────
+anti_patterns:
+
+  the_methodology_trap:
+    description: >
+      Leading with how the engine works before establishing what problem it solves.
+      The ICP does not care about pgvector before they believe you understand
+      why their deals are dying. Methodology is proof material, not opening material.
+    fail_example: >
+      "Explodable uses an anxiety-graph knowledge base built on PostgreSQL
+      and pgvector to synthesize cross-domain research..."
+    pass_example: >
+      "Your CRM says the deal died because of 'budget.' The behavioral economics
+      literature says that's almost certainly not what happened."
+
+  the_credentials_hedge:
+    description: >
+      Softening a finding with unnecessary academic hedging. "Research suggests..."
+      "Some evidence indicates..." These constructions undermine the diagnostic
+      confidence that is the brand's core value. If the evidence is strong, say so.
+      If it isn't, either don't include the finding or flag the confidence level explicitly.
+    fail_example: >
+      "Some research suggests that buyers may sometimes be influenced by
+      factors beyond stated objections."
+    pass_example: >
+      "In 87% of recorded sales conversations, buyer indecision — not budget,
+      not competition — is what kills the deal. That's from 2.5 million calls.
+      The JOLT Effect research. It's not a suggestion."
+
+  the_empathy_performance:
+    description: >
+      Performing understanding of the ICP's pain rather than demonstrating it.
+      "We know how frustrating it is when deals go dark." This is marketing
+      talking about what the ICP feels. The alternative is to just describe
+      the situation so precisely that they feel understood without being told
+      they're understood.
+    fail_example: >
+      "We know how hard it is to watch deals stall at the finish line.
+      That frustration is real, and we built Explodable for exactly that moment."
+    pass_example: >
+      "The deal was at 80% close probability in the CRM for six weeks.
+      Nobody inside the buying company was fighting you. Nobody was fighting
+      for you either. That's a different problem than the one your sales process was built to solve."
+
+  the_humble_founder:
+    description: >
+      Undermining the founder's position by hedging the expertise or over-explaining
+      the origin story. The ICP doesn't need Tom to be relatable. They need Tom
+      to be right. Confidence grounded in evidence is the register.
+      Not arrogance. Not performed humility.
+    fail_example: >
+      "I'm just one person trying to figure this out, and I don't have all
+      the answers, but I've been thinking about why B2B deals die for a while now..."
+    pass_example: >
+      "I built Explodable because I kept watching revenue teams solve a
+      psychological problem with a process solution. The research says
+      those are different problems. The deals say the same thing."
+
+  the_category_announcement:
+    description: >
+      Announcing that Explodable is in a new category or different from competitors.
+      The brand shows its differentiation through the findings themselves —
+      not by claiming to be differentiated. "Unlike other research firms..."
+      is a tell that you're insecure about the comparison.
+    fail_example: >
+      "Unlike traditional buyer research firms that only tell you who your buyers are,
+      Explodable tells you what they're afraid of."
+    pass_example: >
+      "Most buyer research tells you what buyers say. This tells you what
+      the behavioral economics literature says about why buyers in your category
+      go dark — which is not the same thing, and the gap is where your deals are dying."
+
+# ─────────────────────────────────────────────
+# BVCS — BRAND VOICE CONSISTENCY SCORE
+# For Explodable-specific content. Separate from Boulder BVCS.
+# Minimum passing score: 70/100.
+# ─────────────────────────────────────────────
+bvcs:
+  scoring_dimensions:
+
+    precision_of_claim:
+      weight: 25
+      description: >
+        Are claims specific and falsifiable? Is the finding named as a finding,
+        not gestured at as a possibility?
+      pass_criteria: >
+        Every significant claim is specific enough to be wrong. Evidence is named.
+        Findings are declarative.
+      fail_criteria: >
+        Vague claims: "research suggests," "many buyers," "often the case."
+        Claims without evidence. Generic findings that apply to any company.
+
+    skim_layer_integrity:
+      weight: 20
+      description: >
+        Does the first sentence of each paragraph carry the paragraph's full claim?
+        Can someone read only first sentences and understand the argument?
+      pass_criteria: >
+        First sentence of every paragraph is a complete, standalone claim.
+        The skim path delivers the full argument.
+      fail_criteria: >
+        Paragraphs that build to the claim in the final sentence.
+        Topic sentences that announce what the paragraph is about rather than
+        making the claim directly.
+
+    diagnostic_register:
+      weight: 20
+      description: >
+        Does the writing sound like a diagnosis rather than a pitch?
+        Is the posture "here's what I found" rather than "here's why you should buy"?
+      pass_criteria: >
+        Voice is observational, evidenced, confident. Findings are presented
+        as findings. Implications follow naturally from evidence.
+      fail_criteria: >
+        Salesy construction. "You deserve..." "Imagine if..." "What if you could..."
+        Any sentence that is trying to persuade rather than inform.
+
+    icp_vocabulary_usage:
+      weight: 15
+      description: >
+        Does the copy use the ICP's actual vocabulary, not marketing vocabulary?
+      pass_criteria: >
+        "Pipeline," "deal," "stall," "win rate," "buying committee" present.
+        The ICP feels like the writer knows their world from the inside.
+      fail_criteria: >
+        "Customer journey," "growth," "scale," "partnership," generic
+        marketing-speak that could describe any B2B service.
+
+    banned_phrase_compliance:
+      weight: 10
+      description: Absence of all banned words and constructions.
+      pass_criteria: Zero instances of banned vocabulary or constructions.
+      fail_criteria: Any banned term present.
+
+    founder_voice_integrity:
+      weight: 10
+      description: >
+        Is the voice recognizably a specific person, not a brand?
+        Does "I" appear where appropriate? Is there a point of view, not just information?
+      pass_criteria: >
+        First person where appropriate. Specific opinions stated as opinions.
+        The writer has a position, not just findings.
+      fail_criteria: >
+        Generic "we" throughout. Defensive hedging. No discernible point of view.
+        Could have been written by any competent content team.
+
+# ─────────────────────────────────────────────
+# EXAMPLE PASSAGES — CANONICAL REFERENCE
+# What correct Explodable voice sounds like at full expression.
+# ─────────────────────────────────────────────
+examples:
+
+  website_above_fold:
+    label: "Homepage above-the-fold — canonical"
+    text: >
+      Your pipeline problem isn't a process problem.
+
+      Most sales cycles stall not because of pricing, timing, or competition —
+      but because of specific psychological mechanisms your team can't see
+      and your CRM can't capture.
+
+      Explodable diagnoses those mechanisms and tells you exactly what to do about them.
+      For B2B revenue leaders who are done guessing why buyers go dark.
+
+  finding_formatted:
+    label: "Research finding — canonical format"
+    text: >
+      Finding: When buyers cite "internal alignment issues" as a stall reason,
+      behavioral economics research maps this to career risk anxiety
+      in the majority of documented cases — not organizational dysfunction.
+
+      The evidence: Terror Management Theory, documented across 500+ peer-reviewed
+      studies since 1986, shows that high-stakes decisions under uncertainty
+      activate self-preservation responses that override rational evaluation.
+      A B2B buyer who "needs more stakeholder alignment" is often a buyer
+      who is afraid of being the person who made this call.
+
+      The implication: You can't solve a fear of being wrong with a better ROI calculator.
+      The deal that's stuck on "alignment" needs a different kind of reassurance
+      than the one your sales deck is providing.
+
+  newsletter_opener:
+    label: "Newsletter first paragraph — canonical"
+    text: >
+      The JOLT Effect research analyzed 2.5 million sales calls.
+      In 87% of them, buyer indecision — not budget, not competition, not timing —
+      was what killed the deal. Not the competitor who offered a better price.
+      Not the economic headwinds. The buyer's own fear of making a decision
+      they'd have to defend later.
+
+      Your CRM records this as "no decision." Your sales team calls it
+      "they went dark." Neither of those is a diagnosis.
+
+  linkedin_post:
+    label: "LinkedIn — canonical format"
+    text: >
+      Most B2B companies track why they lose deals.
+      Almost none of them get the reason right.
+
+      Sellers and buyers give drastically different loss reasons 50–70% of the time
+      (Corporate Visions). When companies do internal win/loss analysis,
+      85% of the CRM data is wrong — not because reps lie,
+      but because "budget" and "timing" are socially acceptable reasons
+      that protect everyone from having a harder conversation.
+
+      The actual loss reason is usually a specific fear.
+      Career risk. Status quo bias. Fear of being the one who signed off on the wrong vendor.
+
+      You can't address what you can't see.
+      The question isn't why you lost. It's which fear you never found.
+
+  outreach_message:
+    label: "LinkedIn outreach — canonical format"
+    text: >
+      Saw [Company]'s recent shift toward [specific product angle or messaging].
+      Interesting direction — I'm curious whether it's landing with the buyers
+      who actually stall your deals.
+
+      We've been mapping the psychological drivers behind purchase decisions
+      in [their category] and surfaced something counterintuitive about
+      where the friction actually lives for your buyer profile.
+
+      Short analysis — happy to share if it'd be useful.
+
+# ─────────────────────────────────────────────
+# RELATIONSHIP TO OTHER BRAND VOICES
+# ─────────────────────────────────────────────
+brand_relationships:
+  the_boulder:
+    overlap: >
+      Both brands are evidence-driven. Both use specific citations.
+      Both are written by the same person and share intellectual DNA.
+    difference: >
+      The Boulder is for intellectually curious generalists who want to understand
+      the world more clearly. Explodable is for revenue leaders who have a specific
+      problem right now and need a diagnosis. The Boulder can be 2,000 words of
+      Camus and Duolingo. Explodable is never that. Explodable respects the ICP's
+      time in a way The Boulder deliberately does not. The Boulder rewards patience.
+      Explodable rewards skimming.
+    cross_contamination_rule: >
+      Do not let The Boulder's philosophical register bleed into Explodable content.
+      No Sisyphus. No Camus. No absurdist observations about the human condition.
+      Explodable diagnoses pipeline problems. The Boulder diagnoses civilization.
+      Keep these separate.
+    parallel_production_cadence:
+      description: >
+        Both brands run weekly. Both pipelines require two HITL review gates per cycle.
+        Running both on the same production day creates four sequential review interrupts,
+        which is the fastest path to attention fragmentation and review quality degradation.
+      recommendation: >
+        Stagger publication days. Suggested: Boulder publishes Tuesday, Explodable publishes
+        Thursday. This means review gates land on different days — never both on Monday,
+        never both mid-week. Each brand gets full review attention.
+        The engine can run both research pipelines in parallel on any day.
+        The stagger is a human attention constraint, not an engine constraint.
+      review_gate_map:
+        boulder: "Research runs Sunday–Monday. HITL review Monday. Publish Tuesday."
+        explodable: "Research runs Tuesday–Wednesday. HITL review Wednesday. Publish Thursday."

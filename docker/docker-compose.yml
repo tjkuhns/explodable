@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: explodable_postgres
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_DB: explodable
+      POSTGRES_USER: explodable
+      # POSTGRES_PASSWORD is supplied via env_file above so compose invocations
+      # from any working directory (`docker compose -f docker/docker-compose.yml ...`)
+      # pick up the password from the repo-root .env — prevents the "POSTGRES_PASSWORD
+      # not set, defaulting to blank" warning that caused a container recreate on
+      # 2026-04-14 (no data loss — the volume persisted — but a latent footgun
+      # because `docker compose down -v` from a blank-password context would
+      # destroy the volume).
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - explodable_postgres:/var/lib/postgresql/data
+      - ../config/kb_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U explodable"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: explodable_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - explodable_redis:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ── Application services (fastapi, celery) retired 2026-04-14 ──
+#
+# In operator-driven mode, FastAPI and Celery workers run in the terminal,
+# not as containers. This keeps the iteration loop fast and the API surface
+# inspectable without rebuilding images. The compose file now provisions
+# only the infrastructure services (postgres, redis) that benefit from
+# container isolation.
+#
+# To run the app locally:
+#   Terminal 1: docker compose -f docker/docker-compose.yml up postgres redis
+#   Terminal 2: celery -A src.shared.celery_app worker -Q content --loglevel=info
+#   Terminal 3: uvicorn src.operator_ui.api.main:app --host 127.0.0.1 --port 8000 --reload
+
+volumes:
+  explodable_postgres:
+  explodable_redis:

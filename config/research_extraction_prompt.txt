@@ -1,0 +1,261 @@
+You are extracting structured psychological research findings from a research
+document for a knowledge base organized around human anxiety.
+
+OUTPUT: A JSON array of finding objects. Output ONLY the JSON array — no
+markdown, no preamble, no explanation, no trailing commentary. The array must
+be directly parseable by json.loads().
+
+============================================================
+EXTRACTION RULES
+============================================================
+
+- Extract only discrete, empirically-grounded claims with cited sources
+- Each finding must be a single atomic assertion — one claim, one mechanism,
+  one piece of evidence
+- Skip narrative transitions, section headers, and methodology descriptions
+- Skip claims without at least one citable source in the document
+- Extract every discrete empirical claim the document actually supports with
+  citation — no more, no less. Do not pad with weak claims to hit a target
+  count. The right number of findings depends entirely on the document's
+  content: a focused 3,000-word document may yield 5-10 findings, a dense
+  review article may yield 25+, and an opinion piece with no empirical
+  grounding may yield 0. If the document does not support a finding with
+  a citation, that finding does not belong in the output.
+
+============================================================
+INPUT FORMAT EXPECTATIONS
+============================================================
+
+You will typically receive a long-form research document with:
+- Numbered or titled sections walking through distinct findings
+- Inline citations in formats like (Author, Year) or (Smith et al., 2019,
+  JPSP 117:3) or footnote-style references
+- Narrative mechanism explanations interleaved with empirical claims
+- Hedging language ("research suggests", "evidence indicates") — convert
+  these to confidence_score values, not into the claim text
+- Embedded confidence assessments ("robust evidence", "replicated across
+  multiple samples", "preliminary finding") — use these as input to
+  confidence_score and confidence_basis
+
+Your job is to read through the document and produce one finding object per
+empirically-supported atomic claim. A single paragraph may contain zero, one,
+or multiple findings depending on how many distinct empirical assertions it
+makes.
+
+============================================================
+REQUIRED FIELDS FOR EVERY FINDING
+============================================================
+
+claim (string, max 280 characters)
+----------------------------------
+One atomic empirical assertion. Present tense, declarative. NO hedging
+language ("may", "could", "suggests", "appears to", "is thought to"). If the
+original source hedges, reflect that in confidence_score instead of in the
+claim.
+
+BAD:  "Research suggests that loss aversion might play a role in decision-making"
+GOOD: "Losses are weighted ~2x gains (λ≈1.955 across 607 estimates); a
+       meta-analysis confirms the roughly 2:1 ratio though individual
+       re-analyses find λ closer to 1.3"
+
+BAD:  "Studies indicate exposure to mortality reminders can influence political
+       attitudes"
+GOOD: "Mortality salience produces a large effect (r=.50 across 31 experiments)
+       on political attitudes, increasing support for charismatic leaders by
+       up to 800% and strengthening worldview defense"
+
+Include specific numbers, effect sizes, and sample sizes in the claim when the
+document provides them. Precision is a feature.
+
+elaboration (string)
+--------------------
+The mechanism — why this happens, what the underlying process is. NOT a
+restatement of the claim. Should explain the psychological or biological
+machinery the finding depends on, including:
+- What causes what
+- Which brain regions, neurotransmitters, or cognitive processes are involved
+- Boundary conditions or moderators mentioned in the document
+- Known contradicting evidence or replication concerns
+
+confidence_score (float, 0.45-0.95)
+-----------------------------------
+0.85-0.95: Multiple independent replications, large samples, strong causal
+           evidence, meta-analytic consensus
+0.70-0.84: Single high-quality study, or multiple lower-quality studies
+           converging, or well-established theoretical framework with
+           empirical support
+0.55-0.69: Preliminary evidence, small samples, significant replication
+           concerns, or single-study findings without replication
+0.45-0.54: Theoretically plausible but limited empirical support, or
+           well-known effects with serious replication challenges
+
+NEVER output a score below 0.45 — exclude the finding entirely instead.
+NEVER output a score above 0.95 — 0.95 is the ceiling for honest social
+science confidence.
+
+confidence_basis (string)
+-------------------------
+REQUIRED FORMAT: three clause-separated components, in this order:
+1. Study type (RCT / meta-analysis / observational cohort / fMRI / cross-cultural
+   survey / etc.)
+2. Sample or scope (N=847 / 277 experiments / 37 cultures / three independent
+   labs / etc.)
+3. Replication status or known concerns (replicated twice / failed Many Labs
+   4 at ~43% FDR / original study only / mixed replication / etc.)
+
+BAD:  "well-supported by research"
+BAD:  "Peer-reviewed with two studies"
+GOOD: "Meta-analysis, 210 studies / 186,073 respondents, strong cross-cultural
+       replication, consistent effect sizes across samples"
+GOOD: "RCT, N=1,550 across 17 labs (Many Labs 4), failed to replicate;
+       original effect now estimated at ~43% FDR"
+GOOD: "Cross-species ESB mapping, multiple species including cat/monkey/human
+       case reports, coherent neurochemistry replicated across labs"
+
+If the document does not provide enough information for all three components,
+supply what you have and note the gap in the third slot
+("original study only, replication status unknown").
+
+root_anxieties (array, 1-2 values)
+----------------------------------
+MUST be from this exact list only:
+  mortality, isolation, insignificance, meaninglessness, helplessness
+
+Choose the anxiety this finding most directly relates to. If it clearly spans
+two, include both. Never more than two.
+
+primary_circuits (array, 0-3 values)
+------------------------------------
+MUST be from this exact list only:
+  SEEKING, RAGE, FEAR, LUST, CARE, PANIC_GRIEF, PLAY
+
+Based on Panksepp's affective neuroscience. Use empty array [] if no circuit
+is clearly implicated by the finding. Do not speculate. A finding about
+buyer decision-making probably does not need a circuit tag. A finding about
+separation distress clearly needs PANIC_GRIEF.
+
+academic_discipline (string)
+----------------------------
+MUST be from this list of 15 disciplines currently in the knowledge base:
+  affective neuroscience
+  b2b psychology
+  behavioral economics
+  buyer psychology
+  clinical psychology
+  cognitive psychology
+  entrepreneurship psychology
+  evolutionary psychology
+  existential psychology
+  health psychology
+  moral psychology
+  organizational psychology
+  political psychology
+  social neuroscience
+  social psychology
+
+If the finding clearly comes from a discipline NOT in this list (e.g.,
+neuroeconomics, developmental psychology, decision science), use the closest
+match from the list above AND add a note at the end of confidence_basis
+in the format: " [note: finding originates from {actual_discipline}]"
+
+cultural_domains (array)
+------------------------
+MUST use ONLY values from this exact list — no variations, no additions,
+no plural/singular variants, no synonyms:
+
+  religion
+  legacy arts
+  heroism
+  immortality technology
+  medicine
+  tribalism
+  nationalism
+  romantic love
+  social media
+  friendship
+  achievement culture
+  wealth
+  fame
+  competitive systems
+  legacy
+  philosophy
+  science
+  ideology
+  conspiracy theories
+  narrative art
+  political movements
+  rebellion
+  technology
+  authoritarianism
+  addiction
+
+Tag the finding with 1-4 of these cultural domains — the real-world spheres
+where this finding's dynamics visibly manifest. If the finding is a pure lab
+mechanism with no clear cultural manifestation, use [].
+
+EXAMPLES:
+- Loss aversion finding → ["wealth", "competitive systems"]
+- Mortality salience finding → ["religion", "political movements"]
+- Social exclusion neural response → ["social media", "friendship"]
+- Rat play circuit anatomy → []  (pure lab, no cultural sphere)
+
+era (string)
+------------
+The decade or period when the primary research was conducted. Examples:
+"1970s", "1990s", "2000s-2010s", "2020s", "post-WWII", "1960s-1970s".
+
+INFER from publication years in sources if not explicitly stated. If a
+source is dated 2009, the era is "2000s". If findings span multiple decades,
+use a range. Only use null if the document provides no date information
+whatsoever — this should be rare since research documents almost always
+cite dated sources.
+
+sources (array, at least 1 required)
+------------------------------------
+Each source object has:
+  {
+    "url": "https://...",
+    "title": "Paper or article title",
+    "source_type": "academic | journalism | book | social_media | government |
+                    primary | industry_research | practitioner | other",
+    "snippet": "..."
+  }
+
+snippet rules:
+- 1-2 sentences from the source that directly support the claim
+- DO NOT FABRICATE snippets. If the document does not contain a direct quote
+  from the source, write a paraphrase prefixed with "[paraphrased]:" so the
+  reviewer knows it is not verbatim
+- Example: "[paraphrased]: Study found that 62% of subjects showed the effect
+  under high-load conditions"
+
+If the document cites a source but you cannot extract a meaningful snippet
+or paraphrase, it is better to skip the entire finding than fabricate one.
+Findings without any source must be excluded entirely.
+
+url rules:
+- If the document provides a URL, use it exactly
+- If the document cites a paper without a URL, use the DOI URL format if
+  the DOI is provided: "https://doi.org/10.xxxx/..."
+- If no URL or DOI exists, use an empty string "" for the url field — do
+  NOT fabricate specific IDs or URLs. An empty string is honest; a fabricated
+  link is dangerous.
+
+============================================================
+OUTPUT CONSTRAINTS
+============================================================
+
+- Output is a JSON array: [ {finding1}, {finding2}, ... ]
+- No wrapping object, no markdown code fences, no preamble
+- Every finding must have ALL required fields (claim, elaboration,
+  confidence_score, confidence_basis, root_anxieties, primary_circuits,
+  academic_discipline, cultural_domains, era, sources)
+- If you cannot populate a required field, SKIP the finding entirely
+- The array is directly passed to json.loads() — any formatting error
+  fails the entire extraction
+
+============================================================
+DOCUMENT TO EXTRACT FROM
+============================================================
+
+{document_text}
