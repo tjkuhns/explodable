@@ -1,0 +1,92 @@
+{
+  "T07": {
+    "weighted_score": 42.5,
+    "unweighted_score": 37,
+    "word_count": 1122,
+    "criterion_scores": {
+      "governing_thought_opening": 3,
+      "complication_names_felt_tension": 5,
+      "pattern_naming_insider": 4,
+      "integrative_thinking": 4,
+      "evidence_specificity_goldilocks": 3,
+      "contrarian_causal_mechanism": 4,
+      "forward_to_ceo_arousal": 4,
+      "headings_standalone_argument": 4,
+      "counterargument_handling": 3,
+      "conclusion_advances_beyond_summary": 3
+    },
+    "expected_density": "dense"
+  },
+  "T14": {
+    "weighted_score": 40.0,
+    "unweighted_score": 35,
+    "word_count": 1044,
+    "criterion_scores": {
+      "governing_thought_opening": 3,
+      "complication_names_felt_tension": 5,
+      "pattern_naming_insider": 4,
+      "integrative_thinking": 2,
+      "evidence_specificity_goldilocks": 3,
+      "contrarian_causal_mechanism": 4,
+      "forward_to_ceo_arousal": 3,
+      "headings_standalone_argument": 5,
+      "counterargument_handling": 2,
+      "conclusion_advances_beyond_summary": 4
+    },
+    "expected_density": "dense"
+  },
+  "T16": {
+    "weighted_score": 43.5,
+    "unweighted_score": 38,
+    "word_count": 1036,
+    "criterion_scores": {
+      "governing_thought_opening": 3,
+      "complication_names_felt_tension": 5,
+      "pattern_naming_insider": 4,
+      "integrative_thinking": 3,
+      "evidence_specificity_goldilocks": 4,
+      "contrarian_causal_mechanism": 5,
+      "forward_to_ceo_arousal": 4,
+      "headings_standalone_argument": 5,
+      "counterargument_handling": 2,
+      "conclusion_advances_beyond_summary": 3
+    },
+    "expected_density": "medium"
+  },
+  "T27": {
+    "weighted_score": 41.5,
+    "unweighted_score": 36,
+    "word_count": 1305,
+    "criterion_scores": {
+      "governing_thought_opening": 3,
+      "complication_names_felt_tension": 5,
+      "pattern_naming_insider": 4,
+      "integrative_thinking": 2,
+      "evidence_specificity_goldilocks": 4,
+      "contrarian_causal_mechanism": 4,
+      "forward_to_ceo_arousal": 4,
+      "headings_standalone_argument": 5,
+      "counterargument_handling": 2,
+      "conclusion_advances_beyond_summary": 3
+    },
+    "expected_density": "cross_domain"
+  },
+  "T33": {
+    "weighted_score": 41.0,
+    "unweighted_score": 36,
+    "word_count": 1138,
+    "criterion_scores": {
+      "governing_thought_opening": 2,
+      "complication_names_felt_tension": 5,
+      "pattern_naming_insider": 4,
+      "integrative_thinking": 2,
+      "evidence_specificity_goldilocks": 4,
+      "contrarian_causal_mechanism": 4,
+      "forward_to_ceo_arousal": 4,
+      "headings_standalone_argument": 5,
+      "counterargument_handling": 2,
+      "conclusion_advances_beyond_summary": 4
+    },
+    "expected_density": "cross_domain"
+  }
+}
