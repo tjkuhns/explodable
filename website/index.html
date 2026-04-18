@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explodable — AI Content Engine for B2B Buyer Psychology</title>
+<meta name="description" content="An AI content engine that produces analytical essays grounded in an anxiety-indexed behavioral science knowledge base. Built with LangGraph, pgvector, and Claude.">
+<meta property="og:title" content="Explodable — AI Content Engine">
+<meta property="og:description" content="Multi-stage AI pipeline with calibrated evaluation harness. 305 behavioral science findings, 763 typed relationships, thesis-driven content generation.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://explodable.io">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0D0D0F;
+--bg-surface:#131315;
+--bg-card:#1A1A1D;
+--border:#2A2A2D;
+--text:#F0EDE6;
+--text-muted:#8A8780;
+--text-dim:#5A5A5D;
+--accent:#E84E1B;
+--accent-hover:#F05A25;
+--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+--font-mono:'SF Mono','Fira Code','Courier New',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-hover)}
+.container{max-width:900px;margin:0 auto;padding:0 24px}
+
+nav{padding:20px 0;border-bottom:1px solid var(--border)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+nav .brand{font-size:18px;font-weight:700;letter-spacing:0.5px}
+nav .links{display:flex;gap:24px;font-size:14px}
+nav .links a{color:var(--text-muted)}
+nav .links a:hover{color:var(--text)}
+
+.hero{padding:80px 0 60px}
+.hero h1{font-size:42px;line-height:1.2;font-weight:700;margin-bottom:20px;max-width:700px}
+.hero .subtitle{font-size:20px;color:var(--text-muted);margin-bottom:32px;max-width:600px;line-height:1.6}
+.hero .cta-row{display:flex;gap:16px;flex-wrap:wrap}
+.btn{display:inline-block;padding:12px 24px;border-radius:6px;font-size:15px;font-weight:600;transition:all 0.2s}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:var(--accent-hover);color:white}
+.btn-secondary{border:1px solid var(--border);color:var(--text-muted)}
+.btn-secondary:hover{border-color:var(--text-muted);color:var(--text)}
+
+.metrics{padding:60px 0;border-top:1px solid var(--border)}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.metric{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px}
+.metric .number{font-size:32px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.metric .label{font-size:14px;color:var(--text-muted);line-height:1.4}
+
+.sample{padding:60px 0;border-top:1px solid var(--border)}
+.sample h2{font-size:28px;font-weight:700;margin-bottom:8px}
+.sample .context{font-size:14px;color:var(--text-muted);margin-bottom:24px}
+.sample blockquote{border-left:3px solid var(--accent);padding:20px 24px;background:var(--bg-surface);border-radius:0 8px 8px 0;font-size:16px;line-height:1.8}
+.sample blockquote strong{color:var(--accent)}
+
+.how{padding:60px 0;border-top:1px solid var(--border)}
+.how h2{font-size:28px;font-weight:700;margin-bottom:32px}
+.pipeline{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:32px;font-family:var(--font-mono);font-size:14px;line-height:2;color:var(--text-muted);overflow-x:auto;white-space:pre}
+.pipeline .hl{color:var(--text)}
+.pipeline .ac{color:var(--accent)}
+
+.kb{padding:60px 0;border-top:1px solid var(--border)}
+.kb h2{font-size:28px;font-weight:700;margin-bottom:12px}
+.kb .desc{color:var(--text-muted);margin-bottom:24px;max-width:600px}
+.kb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.kb-item{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px}
+.kb-item .kb-label{font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.kb-item .kb-value{font-size:24px;font-weight:700}
+.kb-item .kb-detail{font-size:14px;color:var(--text-muted);margin-top:4px}
+
+.eval{padding:60px 0;border-top:1px solid var(--border)}
+.eval h2{font-size:28px;font-weight:700;margin-bottom:12px}
+.eval .desc{color:var(--text-muted);margin-bottom:24px;max-width:650px}
+.eval-points{display:grid;gap:16px}
+.eval-point{display:flex;gap:16px;align-items:flex-start}
+.eval-point .num{font-size:14px;font-weight:700;color:var(--accent);min-width:24px;margin-top:2px}
+.eval-point .content{font-size:15px;color:var(--text-muted);line-height:1.6}
+.eval-point .content strong{color:var(--text)}
+
+.about{padding:60px 0;border-top:1px solid var(--border)}
+.about h2{font-size:28px;font-weight:700;margin-bottom:16px}
+.about p{color:var(--text-muted);margin-bottom:16px;max-width:650px}
+.about .tech{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.about .tag{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:4px 12px;font-size:13px;color:var(--text-muted)}
+
+footer{padding:40px 0;border-top:1px solid var(--border);text-align:center;font-size:14px;color:var(--text-dim)}
+footer a{color:var(--text-muted)}
+
+@media(max-width:700px){
+.metrics-grid{grid-template-columns:1fr}
+.kb-grid{grid-template-columns:1fr}
+.hero h1{font-size:32px}
+nav .links{gap:14px;font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+<div class="brand">EXPLODABLE</div>
+<div class="links">
+<a href="#how">Architecture</a>
+<a href="#eval">Evaluation</a>
+<a href="https://explodable.streamlit.app" target="_blank">Live demo</a>
+<a href="https://github.com/tjkuhns/explodable" target="_blank">GitHub</a>
+</div>
+</div>
+</nav>
+
+<section class="hero">
+<div class="container">
+<h1>AI content engine for B2B buyer psychology</h1>
+<p class="subtitle">
+A multi-stage pipeline that produces analytical essays grounded in 305 behavioral-science findings. Each stage uses the AI architecture empirically validated for that stage's cognitive task type.
+</p>
+<div class="cta-row">
+<a href="https://explodable.streamlit.app" class="btn btn-primary" target="_blank">Try the demo →</a>
+<a href="https://github.com/tjkuhns/explodable" class="btn btn-secondary" target="_blank">View source</a>
+</div>
+</div>
+</section>
+
+<section class="metrics">
+<div class="container">
+<div class="metrics-grid">
+<div class="metric">
+<div class="number">+8 pts</div>
+<div class="label">Thesis-as-structural-schema vs standard prompting, validated at N=50</div>
+</div>
+<div class="metric">
+<div class="number">+13 pts</div>
+<div class="label">Cross-domain synthesis via wiki index scan + graph expansion over vector retrieval</div>
+</div>
+<div class="metric">
+<div class="number">ρ = 0.841</div>
+<div class="label">Judge calibration against a 5-model editorial panel</div>
+</div>
+<div class="metric">
+<div class="number">305</div>
+<div class="label">Behavioral-science findings indexed by anxiety, Panksepp circuit, and cultural domain</div>
+</div>
+<div class="metric">
+<div class="number">763</div>
+<div class="label">Typed cross-domain relationships — 85% connect findings across different domains</div>
+</div>
+<div class="metric">
+<div class="number">$0.09</div>
+<div class="label">Per draft — 3.3× cheaper than monolithic retrieval at higher cross-domain quality</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="sample">
+<div class="container">
+<h2>Sample output</h2>
+<p class="context">Generated by the hybrid pipeline from KB findings on scarcity cognition, committee dynamics, and loss aversion:</p>
+<blockquote>
+<strong>The Mid-Market Trap</strong><br><br>
+The VP of Operations at a $25M logistics company stares at three SaaS demos on her laptop at 4:47 PM on a Thursday. She's been in meetings since 7 AM, the CEO is asking for a vendor recommendation by Friday, and her team of eight stakeholders can't agree on basic requirements. She closes the laptop and defaults to "let's table this until Q2" — the same decision she made last quarter.<br><br>
+The mid-market sits in a decision-making dead zone. Too big for intuitive founder choices. Too small for enterprise decision infrastructure. They don't decide with logic first, then hire fear to audit. <strong>They decide with fear first, then hire logic to testify.</strong>
+</blockquote>
+</div>
+</section>
+
+<section class="how" id="how">
+<div class="container">
+<h2>Architecture</h2>
+<div class="pipeline"><span class="hl">topic_router</span> ─────── classifies topic, routes to optimal retrieval
+  ├─ <span class="ac">wiki_selector</span> ── reads KB index, picks findings across domains
+  ├─ <span class="ac">vector_retriever</span> ── pgvector similarity search within cluster
+  └─ <span class="ac">graph_walker</span> ──── PPR traversal + MMR diversity reranking
+         │
+<span class="hl">graph_expander</span> ────── adds cross-domain findings via relationship graph
+         │
+<span class="hl">outline_generator</span> ─── thesis-constrained (Architecture B)
+         │               each section instantiates fear→testimony
+         │
+<span class="hl">draft_generator</span> ───── focused context, voice profile, citations
+         │
+<span class="hl">adversarial_critic</span> ── different model reads full KB + draft
+         │
+<span class="hl">revision_gate</span> ─────── Pareto filter: improve without regressing
+         │
+<span class="hl">quality_gate</span> ──────── calibrated judge + execution gate</div>
+</div>
+</section>
+
+<section class="kb" id="kb">
+<div class="container">
+<h2>The knowledge base</h2>
+<p class="desc">An anxiety-indexed knowledge graph modeling how fear drives executive decision-making. Not a document store — a structured model of buyer psychology.</p>
+<div class="kb-grid">
+<div class="kb-item">
+<div class="kb-label">Root anxieties</div>
+<div class="kb-value">5</div>
+<div class="kb-detail">Helplessness · Insignificance · Isolation · Meaninglessness · Mortality</div>
+</div>
+<div class="kb-item">
+<div class="kb-label">Affective circuits</div>
+<div class="kb-value">7</div>
+<div class="kb-detail">Panksepp circuits mapped to buyer behavior</div>
+</div>
+<div class="kb-item">
+<div class="kb-label">Cultural domains</div>
+<div class="kb-value">24</div>
+<div class="kb-detail">Competitive systems · Wealth · Tribalism · Technology · Religion · +19 more</div>
+</div>
+<div class="kb-item">
+<div class="kb-label">Cross-domain edges</div>
+<div class="kb-value">85%</div>
+<div class="kb-detail">Of all relationship edges connect findings across different domains</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="eval" id="eval">
+<div class="container">
+<h2>Evaluation methodology</h2>
+<p class="desc">Every architectural decision was driven by measured results, not assumptions.</p>
+<div class="eval-points">
+<div class="eval-point">
+<div class="num">01</div>
+<div class="content"><strong>10-criterion rubric</strong> grounded in Minto Pyramid, BCG action-titles, Toulmin argument model, and Berger-Milkman sharing research.</div>
+</div>
+<div class="eval-point">
+<div class="num">02</div>
+<div class="content"><strong>7-model editorial panel</strong> — each independently ranked 12 drafts on the same criterion. Outliers dropped on principled axes.</div>
+</div>
+<div class="eval-point">
+<div class="num">03</div>
+<div class="content"><strong>Spearman ρ = 0.841</strong> against the 5-model tight cluster. Recalibrated on Sonnet (ρ = 0.782) for 8× cheaper ongoing scoring.</div>
+</div>
+<div class="eval-point">
+<div class="num">04</div>
+<div class="content"><strong>N=50 validation</strong> across five density conditions with confidence intervals.</div>
+</div>
+<div class="eval-point">
+<div class="num">05</div>
+<div class="content"><strong>CAG negative result:</strong> full-context stuffing scored 26.3 vs 32.0 for focused approaches. First measured result on a generation task.</div>
+</div>
+</div>
+<a href="https://github.com/tjkuhns/explodable/blob/main/docs/eval-methodology.md" class="btn btn-secondary" style="margin-top:24px" target="_blank">Read the full methodology →</a>
+</div>
+</section>
+
+<section class="about" id="about">
+<div class="container">
+<h2>Built by Tom Kuhns</h2>
+<p>
+Agentic engineer building evaluated AI systems with Claude Code. Background in B2B SaaS — the buyer psychology domain expertise comes from years inside the sales cycle, not from a textbook.
+</p>
+<p>
+The entire system was built through AI pair programming. The evaluation methodology, the architecture decisions, and the 25 research reports grounding every design choice are the portfolio.
+</p>
+<div class="tech">
+<span class="tag">Claude Sonnet 4</span>
+<span class="tag">LangGraph</span>
+<span class="tag">pgvector</span>
+<span class="tag">PostgreSQL</span>
+<span class="tag">Python igraph</span>
+<span class="tag">Supabase</span>
+<span class="tag">Streamlit</span>
+<span class="tag">Claude Code</span>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<a href="https://github.com/tjkuhns/explodable" target="_blank">GitHub</a> ·
+<a href="https://explodable.streamlit.app" target="_blank">Demo</a> ·
+<a href="https://linkedin.com/in/thomasjkuhns" target="_blank">LinkedIn</a> ·
+Youngstown, OH
+</div>
+</footer>
+
+</body>
+</html>

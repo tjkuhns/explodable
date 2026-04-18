@@ -22,7 +22,6 @@ node_modules/
 inbox/
 celerybeat-schedule*
 archive/
-website/
 logs/
 kb_wiki/
 cache/
