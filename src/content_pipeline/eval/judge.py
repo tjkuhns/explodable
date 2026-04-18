@@ -288,7 +288,7 @@ def _extract_tool_use_scores(resp, rubric: dict[str, Any]) -> list[dict]:
 def score_draft(
     draft_path: Path | str,
     rubric_path: Path | str = "config/rubrics/analytical_essay.yaml",
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-20250514",
     max_tokens: int = 4096,
 ) -> DraftScore:
     """Score a draft against a rubric using Claude-as-judge.
