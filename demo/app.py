@@ -50,12 +50,19 @@ with st.sidebar:
         # Use Supabase if available, fall back to local
         supa_pass = os.environ.get("SUPABASE_PASSWORD", "")
         if supa_pass:
-            db_url = f"postgresql://postgres:{supa_pass}@db.cgausradwkpvdsiaarkj.supabase.co:5432/postgres"
+            conn_params = {
+                "host": "db.cgausradwkpvdsiaarkj.supabase.co",
+                "port": 5432,
+                "user": "postgres",
+                "password": supa_pass,
+                "dbname": "postgres",
+            }
         else:
             db_url = os.environ.get("DATABASE_URL", "").replace("postgresql+psycopg://", "postgresql://")
             if "${POSTGRES_PASSWORD}" in db_url:
                 db_url = db_url.replace("${POSTGRES_PASSWORD}", os.environ.get("POSTGRES_PASSWORD", ""))
-        with psycopg.connect(db_url) as conn:
+            conn_params = db_url
+        with psycopg.connect(**conn_params) if isinstance(conn_params, dict) else psycopg.connect(conn_params) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT count(*) FROM findings WHERE status='active'")
                 n_findings = cur.fetchone()[0]
