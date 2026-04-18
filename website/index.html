@@ -83,6 +83,9 @@ nav .links a:hover{color:var(--text)}
 .eval-point .content{font-size:15px;color:var(--text-muted);line-height:1.6}
 .eval-point .content strong{color:var(--text)}
 
+.blog{padding:60px 0;border-top:1px solid var(--border)}
+.blog h2{font-size:28px;font-weight:700;margin-bottom:24px}
+
 .about{padding:60px 0;border-top:1px solid var(--border)}
 .about h2{font-size:28px;font-weight:700;margin-bottom:16px}
 .about p{color:var(--text-muted);margin-bottom:16px;max-width:650px}
@@ -108,6 +111,7 @@ nav .links{gap:14px;font-size:13px}
 <div class="links">
 <a href="#how">Architecture</a>
 <a href="#eval">Evaluation</a>
+<a href="#blog">Writing</a>
 <a href="https://explodable.streamlit.app" target="_blank">Live demo</a>
 <a href="https://github.com/tjkuhns/explodable" target="_blank">GitHub</a>
 </div>
@@ -252,14 +256,30 @@ The mid-market sits in a decision-making dead zone. Too big for intuitive founde
 </div>
 </section>
 
+<section class="blog" id="blog">
+<div class="container">
+<h2>Writing</h2>
+<div class="eval-points">
+<div class="eval-point">
+<div class="num">→</div>
+<div class="content"><strong><a href="/blog/eval-methodology">I calibrated an LLM judge against 7 models. Then I transferred it to code review in an afternoon.</a></strong><br><span style="color:var(--text-dim);font-size:13px;">Eval methodology, multi-model calibration, the pre-registration flaw, and what happened when the harness moved to a new domain. April 2026.</span></div>
+</div>
+</div>
+</div>
+</section>
+
 <section class="about" id="about">
 <div class="container">
 <h2>Built by Tom Kuhns</h2>
 <p>
-Agentic engineer building evaluated AI systems with Claude Code. Background in B2B SaaS — the buyer psychology domain expertise comes from years inside the sales cycle, not from a textbook.
+Agentic engineer building evaluated AI systems with Claude Code. Background in B2B SaaS, working with procurement committees, post-sale implementation teams, and the moments where pilots actually fail. The buyer psychology domain expertise comes from years inside the sales cycle.
 </p>
 <p>
-The entire system was built through AI pair programming. The evaluation methodology, the architecture decisions, and the 25 research reports grounding every design choice are the portfolio.
+The portfolio isn't just the code. It's the evaluation methodology, the architectural decisions, and the 25 research reports that ground every design choice.
+</p>
+<p style="margin-top:20px;color:var(--text);">
+Open to Applied AI, Agentic Engineer, Forward Deployed, and DevRel roles at AI-native companies. Remote from Youngstown, OH.<br>
+<a href="mailto:thomasjkuhns@gmail.com">thomasjkuhns@gmail.com</a> · <a href="https://linkedin.com/in/tomkuhns" target="_blank">LinkedIn</a>
 </p>
 <div class="tech">
 <span class="tag">Claude Sonnet 4</span>
@@ -270,6 +290,8 @@ The entire system was built through AI pair programming. The evaluation methodol
 <span class="tag">Supabase</span>
 <span class="tag">Streamlit</span>
 <span class="tag">Claude Code</span>
+<span class="tag">LLM-as-judge eval harness</span>
+<span class="tag">Spearman calibration</span>
 </div>
 </div>
 </section>
