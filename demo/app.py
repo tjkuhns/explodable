@@ -46,28 +46,33 @@ with st.sidebar:
     st.markdown("### Knowledge Base")
 
     try:
-        import psycopg
-        # Use Supabase if available, fall back to local
-        supa_pass = os.environ.get("SUPABASE_PASSWORD", "")
-        if supa_pass:
-            conn_params = {
-                "host": "db.cgausradwkpvdsiaarkj.supabase.co",
-                "port": 5432,
-                "user": "postgres",
-                "password": supa_pass,
-                "dbname": "postgres",
-            }
+        import requests as _req
+
+        SUPA_URL = "https://cgausradwkpvdsiaarkj.supabase.co"
+        SUPA_KEY = os.environ.get("SUPABASE_SECRET_KEY", "")
+
+        if SUPA_KEY:
+            _headers = {"apikey": SUPA_KEY, "Authorization": f"Bearer {SUPA_KEY}"}
+
+            r1 = _req.get(f"{SUPA_URL}/rest/v1/findings?status=eq.active&select=id",
+                         headers={**_headers, "Prefer": "count=exact"}, timeout=10)
+            n_findings = int(r1.headers.get("Content-Range", "0/305").split("/")[-1])
+
+            r2 = _req.get(f"{SUPA_URL}/rest/v1/finding_relationships?select=id",
+                         headers={**_headers, "Prefer": "count=exact"}, timeout=10)
+            n_rels = int(r2.headers.get("Content-Range", "0/763").split("/")[-1])
         else:
+            # Fall back to local Postgres
+            import psycopg
             db_url = os.environ.get("DATABASE_URL", "").replace("postgresql+psycopg://", "postgresql://")
             if "${POSTGRES_PASSWORD}" in db_url:
                 db_url = db_url.replace("${POSTGRES_PASSWORD}", os.environ.get("POSTGRES_PASSWORD", ""))
-            conn_params = db_url
-        with psycopg.connect(**conn_params) if isinstance(conn_params, dict) else psycopg.connect(conn_params) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT count(*) FROM findings WHERE status='active'")
-                n_findings = cur.fetchone()[0]
-                cur.execute("SELECT count(*) FROM finding_relationships")
-                n_rels = cur.fetchone()[0]
+            with psycopg.connect(db_url) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT count(*) FROM findings WHERE status='active'")
+                    n_findings = cur.fetchone()[0]
+                    cur.execute("SELECT count(*) FROM finding_relationships")
+                    n_rels = cur.fetchone()[0]
 
         st.metric("Active findings", n_findings)
         st.metric("Typed relationships", n_rels)
