@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I calibrated an LLM judge against 7 models. Then I transferred it to code review in an afternoon. — Explodable</title>
+<meta name="description" content="How I built a calibrated LLM-as-judge evaluation harness, what went wrong with the methodology, and why the methodology transferred to a completely different domain in an hour.">
+<meta property="og:title" content="I calibrated an LLM judge against 7 models. Then I transferred it to code review in an afternoon.">
+<meta property="og:description" content="LLM-as-judge calibration: what worked, what I'd do differently, and what happened when I applied the same harness to Python code quality.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://explodable.io/blog/eval-methodology">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0D0D0F;
+--bg-surface:#131315;
+--bg-card:#1A1A1D;
+--border:#2A2A2D;
+--text:#F0EDE6;
+--text-muted:#8A8780;
+--text-dim:#5A5A5D;
+--accent:#E84E1B;
+--accent-hover:#F05A25;
+--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+--font-mono:'SF Mono','Fira Code','Courier New',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:18px;line-height:1.85;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-hover)}
+
+nav{padding:20px 0;border-bottom:1px solid var(--border)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+nav .brand{font-size:18px;font-weight:700;letter-spacing:0.5px}
+nav .links{display:flex;gap:24px;font-size:14px}
+nav .links a{color:var(--text-muted)}
+nav .links a:hover{color:var(--text)}
+
+.container{max-width:720px;margin:0 auto;padding:0 24px}
+
+article{padding:60px 0 80px}
+article h1{font-size:36px;line-height:1.2;font-weight:700;margin-bottom:12px}
+article .meta{font-size:14px;color:var(--text-dim);margin-bottom:40px}
+article h2{font-size:24px;font-weight:700;margin:48px 0 16px;color:var(--text)}
+article p{margin-bottom:20px;color:var(--text-muted)}
+article p strong{color:var(--text)}
+article ul,article ol{margin-bottom:20px;padding-left:24px;color:var(--text-muted)}
+article li{margin-bottom:8px}
+article blockquote{border-left:3px solid var(--accent);padding:16px 20px;background:var(--bg-surface);border-radius:0 6px 6px 0;margin-bottom:20px;font-size:16px}
+article code{font-family:var(--font-mono);background:var(--bg-card);padding:2px 6px;border-radius:3px;font-size:15px}
+article pre{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:20px;overflow-x:auto;font-family:var(--font-mono);font-size:14px;line-height:1.6;color:var(--text-muted)}
+article table{width:100%;border-collapse:collapse;margin-bottom:20px}
+article th,article td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:15px}
+article th{color:var(--text);font-weight:600}
+article td{color:var(--text-muted)}
+.callout{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:24px}
+.callout p{margin-bottom:0}
+
+footer{padding:40px 0;border-top:1px solid var(--border);text-align:center;font-size:14px;color:var(--text-dim)}
+footer a{color:var(--text-muted)}
+
+@media(max-width:700px){
+article h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+<a href="/" class="brand">EXPLODABLE</a>
+<div class="links">
+<a href="/">Home</a>
+<a href="https://explodable.streamlit.app" target="_blank">Demo</a>
+<a href="https://github.com/tjkuhns/explodable" target="_blank">GitHub</a>
+<a href="https://linkedin.com/in/tomkuhns" target="_blank">LinkedIn</a>
+</div>
+</div>
+</nav>
+
+<article>
+<div class="container">
+
+<h1>I calibrated an LLM judge against 7 models. Then I transferred it to code review in an afternoon.</h1>
+<div class="meta">Tom Kuhns · April 2026 · Youngstown, OH</div>
+
+<p>Most LLM evaluation measures whether the model got the answer right. I needed to measure whether an AI-generated analytical essay was good enough for a B2B executive to take seriously. Those are different problems, and standard eval tools don't solve the second one.</p>
+
+<p>So I built an evaluation harness. It took weeks. Then I adapted the same harness to evaluate Python code quality. That took an afternoon. The fact that the second one was trivial is the whole point of this post.</p>
+
+<h2>The problem: your quality metric doesn't measure quality</h2>
+
+<p>I was building a content engine that produces long-form analytical essays from a knowledge base of 305 behavioral-science findings. The engine worked — drafts scored 88/100 on voice compliance. But some essays had sections that read like a second essay crammed in. A piece about B2B procurement fear would suddenly veer into identity theory for three paragraphs.</p>
+
+<p>The voice was right. The argument wasn't.</p>
+
+<p>Standard RAG metrics — RAGAS, ROUGE, BERTScore — wouldn't catch this. They measure retrieval relevance and surface-level text quality. They'd score a paragraph-shuffled draft the same as a coherent one. I needed something that could tell me whether the essay held together as one argument.</p>
+
+<h2>Building the judge</h2>
+
+<p>I designed a 10-criterion rubric grounded in published frameworks: Minto Pyramid for argument structure, Toulmin for claim-grounds-warrant logic, BCG action-titles for headings, Berger-Milkman sharing research for "would someone forward this." Each criterion scored 1-5 by an LLM judge using structured output. Three criteria weighted 1.5x based on which dimensions the research says matter most.</p>
+
+<p>The judge uses Claude Opus at temperature 0 for deterministic scoring. I learned early that Opus serializes nested array fields with unescaped inner quotes — a bug that broke citation processing in another part of the pipeline. Flat parallel arrays work reliably. Small detail, but the kind of thing you only discover by building.</p>
+
+<h2>Calibrating against a 7-model panel</h2>
+
+<p>A judge is only useful if it tracks what humans would say. I didn't have a panel of human editors. So I built the next best thing: 7 independent LLMs, each ranking the same 12 drafts on the same criterion.</p>
+
+<p>The criterion: <em>"Would a fractional CMO be comfortable forwarding this piece to their CEO as evidence of why to hire the firm that produced it?"</em></p>
+
+<p>The panel: Gemini 2.5 Pro, Grok 4, DeepSeek V3, Mistral Large, GPT-5, Claude Deep Research, and Qwen3. I batched all 12 drafts into a single ~44K token prompt and pasted it into each model's web UI. Total cost: $0.</p>
+
+<p>Mean pairwise Spearman ρ across all 7: <strong>0.544</strong>. Not tight enough. But the structure told a story.</p>
+
+<p>Five models formed a tight cluster with internal agreement of ρ ≈ 0.83. Two were outliers — Deep Research was applying a second evaluation axis (penalizing execution polish, not just content quality), and Qwen produced inconsistent rankings that didn't track any principled axis. I dropped both and calibrated against the 5-model cluster.</p>
+
+<p>The judge achieved <strong>Spearman ρ = 0.841</strong> against this ground truth.</p>
+
+<h2>The part where I tell you what's wrong with that number</h2>
+
+<p>I chose to drop those two models <em>after</em> seeing which ones disagreed, not before. A pre-registered protocol would have specified the drop criteria in advance. The ρ = 0.841 is real, but it's inflated by post-hoc outlier selection. I'd design this differently next time.</p>
+
+<p>I'm telling you this because it's the most important thing in this entire post. The number is a point estimate from a specific methodology with a specific flaw. Reporting the number without the flaw is how you get eval metrics that look great and mean nothing.</p>
+
+<p>For comparison: G-Eval reports ρ = 0.514 on SummEval. Published human-human agreement on subjective code quality sits at ρ ≈ 0.55-0.7. Our number is high — and I've told you exactly why you should discount it slightly.</p>
+
+<h2>What the harness actually found</h2>
+
+<p>Once the judge was calibrated, I used it to measure pipeline changes. Three findings:</p>
+
+<p><strong>Thesis-as-structural-schema produces an 8-point improvement.</strong> I encoded the brand thesis ("Buyers don't decide with logic. They decide with fear, then hire logic to testify") as a structural constraint in the outline stage — each section must instantiate the fear→testimony mechanism through specific stages, with Toulmin-complete arguments and a derivation check. Validated at N=50 topics.</p>
+
+<p><strong>CAG fails for long-form generation.</strong> Cache-Augmented Generation — stuffing the entire knowledge base (115K tokens) into the context window — scored 26.3 vs 32.0 for focused approaches. Every published CAG evaluation is on QA tasks. This is a negative result on a generation task. The model appears to suffer from selection paralysis — too many findings available, not enough signal to discriminate.</p>
+
+<p><strong>Cross-domain synthesis improved +13 points</strong> when switching from vector retrieval to wiki-style index scanning + graph expansion on topics requiring synthesis across unrelated fields. At N=50, this narrowed to +9 with wide variance — still real, but noisier than one run suggested. Both numbers are in the repo.</p>
+
+<h2>Then I transferred the whole thing to code review in an afternoon</h2>
+
+<p>This is the part that surprised me.</p>
+
+<p>I took the same harness infrastructure — structured rubric in YAML, LLM judge with per-criterion scoring, anchor exemplars at 1/3/5, weighted criteria, veto rules — and swapped the domain. Instead of 10 criteria for essay quality, I wrote 6 criteria for Python code quality:</p>
+
+<ol>
+<li><strong>Naming clarity</strong> (1.5x weight) — do identifiers reveal intent?</li>
+<li><strong>Readability & structure</strong> (1.5x weight) — consistent abstraction, clear control flow?</li>
+<li><strong>Architectural fit</strong> — good module boundaries, low coupling?</li>
+<li><strong>Documentation quality</strong> — docstrings explain contracts, comments explain WHY?</li>
+<li><strong>Error handling</strong> — explicit failure modes, no silent swallowing?</li>
+<li><strong>Testability</strong> — injectable dependencies, pure functions, observable side effects?</li>
+</ol>
+
+<p>Grounded in Clean Code (Martin), A Philosophy of Software Design (Ousterhout), PEP 8/257, and Google's Python Style Guide. Deliberately excludes what linters already catch — formatting, import order, line length. Focuses on the subjective dimensions only humans can assess.</p>
+
+<p>I ran it on my own codebase using Gemini Flash (free tier, different model family from the generator). Results:</p>
+
+<table>
+<tr><th>File</th><th>Score</th></tr>
+<tr><td>eval/judge.py</td><td>35.0/35.0</td></tr>
+<tr><td>adversarial_critic.py</td><td>34.0/35.0</td></tr>
+<tr><td>graph_expander.py</td><td>30.5/35.0</td></tr>
+<tr><td>thesis_outline.py</td><td>30.5/35.0</td></tr>
+<tr><td>revision_gate.py</td><td>26.5/35.0</td></tr>
+<tr><td>topic_router.py</td><td>25.5/35.0</td></tr>
+</table>
+
+<p>The judge correctly differentiated quality within the codebase. The files I'd spent the most design care on scored highest. The ones I built fast scored lower, with specific per-criterion reasoning citing real patterns in the code.</p>
+
+<div class="callout">
+<p><strong>Honest caveat:</strong> This is a sanity check, not calibration. I scored my own code and I'm the one interpreting whether the differentiation "makes sense." Proper calibration against human reviewers would strengthen the signal. That work hasn't been done yet for the code judge.</p>
+</div>
+
+<h2>The methodology is the skill</h2>
+
+<p>It took weeks to build the essay evaluation harness. It took an afternoon to apply the same methodology to code review. The rubric is different. The criteria are different. The domain knowledge is different. But the infrastructure — structured scoring, anchor exemplars, weighted criteria, veto rules, deterministic temperature, multi-model calibration protocol — transferred without modification.</p>
+
+<p>That's the thing I didn't expect. I thought the harness was tightly coupled to the content domain. It isn't. The methodology is domain-agnostic. What's domain-specific is the rubric — and a rubric is a YAML file you can write in an afternoon if you know the domain.</p>
+
+<p>If you're building AI systems that produce output humans need to trust — essays, code, summaries, analyses, recommendations — the evaluation harness is the infrastructure that makes everything else measurable. Without it, you're iterating on vibes. With it, every change produces a number you can compare to the last number.</p>
+
+<h2>What I'd do differently</h2>
+
+<p><strong>Pre-register the outlier criteria.</strong> Decide before running the panel which agreement threshold drops a model. Don't look at the results first.</p>
+
+<p><strong>Get human ground truth.</strong> Even 10-20 human rankings on a subset would break the LLM-judging-LLM circularity. The 7-model panel is a strong proxy but it's still a proxy.</p>
+
+<p><strong>Report more than Spearman ρ.</strong> Add Kendall τ and Krippendorff α. Different correlation measures surface different reliability properties.</p>
+
+<p><strong>Run the code judge calibration for real.</strong> The essay judge has ρ = 0.841 (with the caveats above). The code judge has a rubric and a sanity check. The gap between those two is the gap between "I think this works" and "I can prove this works." Closing it is the next piece of work.</p>
+
+<h2>The repo</h2>
+
+<p>Everything is open: the essay rubric, the code quality rubric, the judge implementation, the calibration data, and the 25 research reports that grounded the design decisions. Built through AI pair programming with Claude Code.</p>
+
+<p><a href="https://github.com/tjkuhns/explodable">github.com/tjkuhns/explodable</a> · <a href="https://explodable.streamlit.app">Live demo</a></p>
+
+</div>
+</article>
+
+<footer>
+<div class="container">
+<a href="/">Explodable</a> ·
+<a href="https://github.com/tjkuhns/explodable" target="_blank">GitHub</a> ·
+<a href="https://linkedin.com/in/tomkuhns" target="_blank">LinkedIn</a> ·
+Tom Kuhns · Youngstown, OH
+</div>
+</footer>
+
+</body>
+</html>
