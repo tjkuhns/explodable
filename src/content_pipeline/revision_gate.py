@@ -18,18 +18,13 @@ Design grounded in Report 3 (docs/research/hybrid_reports/03_adversarial_critiqu
 from __future__ import annotations
 
 import os
-import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-for line in open(Path(__file__).resolve().parent.parent.parent / ".env"):
-    line = line.strip()
-    if not line or line.startswith("#") or "=" not in line:
-        continue
-    k, _, v = line.partition("=")
-    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+from dotenv import load_dotenv
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+load_dotenv()
 
 from src.content_pipeline.eval.judge import (
     CriterionScore,
@@ -41,7 +36,7 @@ from src.content_pipeline.eval.judge import (
 
 
 RUBRIC_PATH = Path("config/rubrics/analytical_essay.yaml")
-REGRESSION_TOLERANCE = 0.0  # no regression allowed; set to 0.5 if small dips acceptable
+REGRESSION_TOLERANCE = 0.0
 
 
 @dataclass
@@ -154,8 +149,21 @@ def revision_gate(
 
     Writes both to temp files for the judge, then cleans up. Returns the
     text of whichever draft passes the gate (original if revision rejected).
+
+    Args:
+        original_draft: the pre-revision essay text
+        revised_draft: the post-revision essay text
+        rubric_path: path to the YAML rubric file
+        tolerance: how much regression per criterion is acceptable (0.0 = none)
+
+    Returns:
+        (chosen_draft_text, GateDecision) — the text of whichever draft
+        passes the gate, plus the full decision with per-criterion data.
     """
-    import tempfile
+    if not original_draft.strip():
+        raise ValueError("original_draft is empty")
+    if not revised_draft.strip():
+        raise ValueError("revised_draft is empty")
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
         f.write(original_draft)

@@ -74,12 +74,13 @@ def _route_from_classification(
 
 
 def _get_db_url() -> str:
-    for line in open(Path(__file__).resolve().parent.parent.parent / ".env"):
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, _, v = line.partition("=")
-        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    """Build a psycopg-compatible database URL from environment variables.
+
+    Expects DATABASE_URL and optionally POSTGRES_PASSWORD in os.environ.
+    Caller is responsible for loading .env before importing this module.
+    """
+    from dotenv import load_dotenv
+    load_dotenv()
     db_url = os.environ["DATABASE_URL"].replace("postgresql+psycopg://", "postgresql://")
     if "${POSTGRES_PASSWORD}" in db_url:
         db_url = db_url.replace("${POSTGRES_PASSWORD}", os.environ["POSTGRES_PASSWORD"])
@@ -235,6 +236,22 @@ class DomainSignalClassifier(TopicClassifier):
         return bool(re.search(r"\b" + re.escape(signal) + r"\b", text))
 
     def classify(self, topic: str) -> TopicClassification:
+        """Classify a topic by matching against domain/anxiety signal keywords.
+
+        Two-stage approach:
+        1. Match topic text against curated keyword→domain and keyword→anxiety
+           mappings using word-boundary regex (avoids substring false positives).
+           Requires ≥2 signal hits per domain to count as a real match.
+        2. Count findings in the matched (domain × anxiety) intersection to
+           estimate density.
+
+        Args:
+            topic: the essay topic or prompt text to classify.
+
+        Returns:
+            TopicClassification with matched domains/anxieties, density
+            estimate, cross-domain flag, and the recommended RetrievalRoute.
+        """
         topic_lower = topic.lower()
 
         # Match domains — require word-boundary matches
