@@ -129,3 +129,9 @@ python scripts/check_export_gate.py drafts/
 - **Content + strategic** (12 reports) — [thesis prompting, editorial workflow, market analysis, competitive landscape](docs/research/content_reports/)
 
 Each architectural decision traces to a specific research finding.
+
+## What's next
+
+- **Content audit mode** — reverse the engine. Instead of producing content from the KB, score external content *against* the KB. Feed it a sales deck, a competitor's landing page, or a pitch email and surface where the claims contradict the behavioral science, where fear mechanisms are missing, and where the framing triggers the wrong anxiety. The retrieval and KB infrastructure exists; this is a new prompt layer on top of it.
+- **Cross-domain application** — apply the eval harness methodology to legal or financial document analysis to validate generalizability beyond B2B buyer psychology.
+- **Standalone eval harness** — extract the judge + multi-model calibration into an independent package. `pip install`, give it a rubric and a set of drafts, get calibrated scores.
