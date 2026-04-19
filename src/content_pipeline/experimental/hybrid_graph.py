@@ -33,7 +33,7 @@ from langgraph.types import Command, interrupt
 from pydantic import BaseModel, Field
 
 # Ensure project root is importable
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from src.content_pipeline.graph import (
     ContentState,
@@ -42,13 +42,13 @@ from src.content_pipeline.graph import (
     outline_generator_node as _original_outline_node,
     publisher_stub_node,
 )
-from src.content_pipeline.thesis_outline import (
+from src.content_pipeline.experimental.thesis_outline import (
     generate_thesis_outline,
     to_newsletter_outline,
     validate_thesis_outline,
 )
-from src.content_pipeline.graph_expander import KBGraph, expand
-from src.content_pipeline.topic_router import (
+from src.content_pipeline.experimental.graph_expander import KBGraph, expand
+from src.content_pipeline.experimental.topic_router import (
     DomainSignalClassifier,
     RetrievalRoute,
     TopicClassification,
@@ -413,7 +413,7 @@ def adversarial_critic_node(state: HybridContentState) -> dict:
         return {"status": "no_draft_to_critique"}
 
     try:
-        from src.content_pipeline.adversarial_critic import (
+        from src.content_pipeline.experimental.adversarial_critic import (
             critique_draft,
             get_critic,
         )

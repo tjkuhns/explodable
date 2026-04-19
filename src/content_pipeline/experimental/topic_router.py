@@ -54,11 +54,12 @@ class TopicClassification:
     confidence: float = 1.0
 
 
-# Routing thresholds (tunable, derived from Phase 1 observations)
+# Routing thresholds (tunable, derived from Phase 1 observations).
+# Density buckets: 0 findings = ood, 1..MEDIUM-1 = sparse,
+# MEDIUM..DENSE-1 = medium, DENSE+ = dense.
 CROSS_DOMAIN_MIN_CLUSTERS = 2
-DENSE_THRESHOLD = 15  # findings matched
+DENSE_THRESHOLD = 15
 MEDIUM_THRESHOLD = 5
-SPARSE_THRESHOLD = 1
 
 
 def _route_from_classification(
@@ -328,8 +329,6 @@ class DomainSignalClassifier(TopicClassifier):
 
         if n_matched == 0:
             density = "ood"
-        elif n_matched < SPARSE_THRESHOLD:
-            density = "sparse"
         elif n_matched < MEDIUM_THRESHOLD:
             density = "sparse"
         elif n_matched < DENSE_THRESHOLD:

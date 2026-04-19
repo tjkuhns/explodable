@@ -60,7 +60,7 @@ def refresh_materialized_views(conn) -> None:
 
 def compile_wiki(conn) -> int:
     """Rebuild kb_wiki/index.md and per-finding pages. Returns finding count."""
-    from src.content_pipeline.graph_expander import KBGraph
+    from src.content_pipeline.experimental.graph_expander import KBGraph
     import re
 
     wiki_root = Path("kb_wiki")

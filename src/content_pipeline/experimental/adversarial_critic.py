@@ -34,12 +34,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Protocol
 
-for line in open(Path(__file__).resolve().parent.parent.parent / ".env"):
-    line = line.strip()
-    if not line or line.startswith("#") or "=" not in line:
-        continue
-    k, _, v = line.partition("=")
-    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 
 class CritiqueDimension(str, Enum):
@@ -254,9 +251,12 @@ def get_critic(backend: str = "auto") -> CriticBackend:
     return AnthropicCritic()
 
 
-def parse_critique(raw: str) -> list[CritiqueProposal]:
-    """Parse the critic's JSON response into typed proposals."""
-    # Strip markdown code fences if present
+def parse_critique(raw: str) -> tuple[list[CritiqueProposal], dict]:
+    """Parse the critic's JSON response.
+
+    Returns (proposals, raw_data) so callers can access the top-level
+    `summary` field without re-parsing the JSON.
+    """
     cleaned = raw.strip()
     if cleaned.startswith("```"):
         cleaned = re.sub(r"^```\w*\n?", "", cleaned)
@@ -274,7 +274,7 @@ def parse_critique(raw: str) -> list[CritiqueProposal]:
                 finding_ids=p.get("finding_ids", []),
             )
         )
-    return proposals
+    return proposals, data
 
 
 def filter_proposals(
@@ -332,15 +332,9 @@ def critique_draft(
 
     raw = critic.critique(draft_text, kb_xml + extra_context)
 
-    proposals = parse_critique(raw)
+    proposals, data = parse_critique(raw)
     proposals = filter_proposals(proposals)
-
-    summary = ""
-    try:
-        data = json.loads(raw.strip().lstrip("`").lstrip("json\n").rstrip("`"))
-        summary = data.get("summary", "")
-    except (json.JSONDecodeError, AttributeError):
-        pass
+    summary = data.get("summary", "")
 
     return CritiqueResult(
         draft_path="",

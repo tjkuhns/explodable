@@ -21,13 +21,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 
-for line in open(Path(__file__).resolve().parent.parent / ".env"):
-    line = line.strip()
-    if not line or line.startswith("#") or "=" not in line:
-        continue
-    k, _, v = line.partition("=")
-    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
 RUBRIC_PATH = Path("config/rubrics/python_code_quality.yaml")

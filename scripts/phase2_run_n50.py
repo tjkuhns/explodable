@@ -33,7 +33,7 @@ for line in open(Path(__file__).resolve().parent.parent / ".env"):
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config.test_topics_n50 import TOPICS, TestTopic
-from src.content_pipeline.hybrid_graph import HybridContentState, compile_hybrid_graph
+from src.content_pipeline.experimental.hybrid_graph import HybridContentState, compile_hybrid_graph
 from src.content_pipeline.eval.judge import load_rubric, rubric_weights, score_draft
 
 

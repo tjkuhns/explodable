@@ -34,6 +34,7 @@ from pathlib import Path
 
 import igraph as ig
 import psycopg
+from dotenv import load_dotenv
 
 
 EDGE_WEIGHTS: dict[str, float] = {
@@ -60,12 +61,7 @@ class ExpandedFinding:
 
 
 def _get_db_url() -> str:
-    for line in open(Path(__file__).resolve().parent.parent.parent / ".env"):
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, _, v = line.partition("=")
-        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
     db_url = os.environ["DATABASE_URL"].replace("postgresql+psycopg://", "postgresql://")
     if "${POSTGRES_PASSWORD}" in db_url:
         db_url = db_url.replace("${POSTGRES_PASSWORD}", os.environ["POSTGRES_PASSWORD"])

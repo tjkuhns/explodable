@@ -1,5 +1,7 @@
 # Explodable
 
+![tests](https://github.com/tjkuhns/explodable/actions/workflows/test.yml/badge.svg)
+
 An AI content engine that produces analytical essays about B2B buyer psychology, grounded in a structured knowledge base of 305 behavioral-science findings.
 
 **[Live demo](https://explodable.streamlit.app)** · **[Eval methodology writeup](docs/eval-methodology.md)** · **[explodable.io](https://explodable.io)**
@@ -24,7 +26,7 @@ An AI content engine that produces analytical essays about B2B buyer psychology,
 
 **CAG (full-context stuffing) fails for long-form generation.** Tested in a controlled 3-way bake-off: CAG scored 26.3 vs Wiki's 32.0 vs the existing retrieval pipeline's 32.6. Every published CAG evaluation is on QA tasks. This is a negative result on a generation task.
 
-**Cross-domain synthesis improved +13 points** when switching from vector retrieval (23.0) to wiki-style index scanning + graph expansion (36.0) on topics requiring synthesis across unrelated fields.
+**Cross-domain synthesis improved +13 points** on a single cross-domain topic — vector retrieval (23.0) vs. wiki-style index scanning + graph expansion (36.0). An N=50 replication confirmed the effect with wide variance (mean 32.2, interval 27.7–36.7) — the improvement is real but noisier than the single-topic result suggested.
 
 ## Evaluation methodology
 
@@ -33,6 +35,8 @@ Quality is measured by a 10-criterion LLM-as-judge rubric covering thesis clarit
 - **Spearman ρ = 0.841** (Claude Opus 4.6, `claude-opus-4-20250514`) / **ρ = 0.782** (Claude Sonnet 4, `claude-sonnet-4-20250514`) against the 5-model tight cluster
 - Validated across **50 test topics** spanning dense, medium, sparse, cross-domain, and out-of-distribution conditions
 - Every architectural decision in the pipeline was driven by measured results, not assumptions
+
+*Calibration limit: the 5-model cluster was derived by dropping 2 outlier models (Claude Deep Research, Qwen) after seeing disagreement. A pre-registered protocol would specify drop criteria in advance. The ρ = 0.841 number is real but inflated by post-hoc selection — full disclosure in the methodology writeup.*
 
 **[Full eval methodology writeup →](docs/eval-methodology.md)**
 

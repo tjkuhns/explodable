@@ -36,7 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import psycopg
 from anthropic import Anthropic
 
-from src.content_pipeline.graph_expander import KBGraph, expand
+from src.content_pipeline.experimental.graph_expander import KBGraph, expand
 
 
 MODEL = "claude-sonnet-4-20250514"
