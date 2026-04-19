@@ -477,11 +477,21 @@ def adversarial_critic_node(state: HybridContentState) -> dict:
 def revision_gate_node(state: HybridContentState) -> dict:
     """Apply Pareto-gated revision based on critique proposals.
 
-    If no proposals or no high-severity proposals, skip revision.
-    Otherwise, generate a revised draft and gate via before/after judge scoring.
+    Current implementation state:
 
-    NOTE: requires 2 judge API calls (~$0.16). Returns original draft if
-    revision doesn't pass the Pareto filter.
+    * **No proposals** → skip, original preserved. (implemented)
+    * **Proposals, none high-severity** → skip, original preserved. (implemented)
+    * **High-severity proposals** → returns ``revision_accepted=None`` with
+      ``revision_gate_reason='revision pending'``. **The revised-draft
+      generation step is not yet wired in this node**, pending API-credit
+      budget — see the TODO block below. The Pareto filter itself
+      (:mod:`src.content_pipeline.experimental.revision_gate`) is fully
+      implemented and unit-tested; only the node-level integration is stubbed.
+
+    Implication for measurement runs: in the phase 2 N=50 benchmark, no
+    revised drafts were ever generated or scored. All N=50 scores are of
+    original drafts. The node's presence in the graph reflects the
+    **target** architecture, not the currently-executing one.
     """
     if not state.critique_proposals:
         return {

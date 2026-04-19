@@ -12,7 +12,7 @@ into the production `graph.py`.
 | `topic_router.py` | Classifies topics on (domain coverage × cross-domain × density) and routes to the retrieval modality empirically best for that combination. |
 | `graph_expander.py` | Personalized PageRank + MMR diversity reranking over the finding-relationships graph. |
 | `adversarial_critic.py` | Different-model critic (Gemini Flash preferred over OpenAI over Anthropic Opus) producing atomic critique proposals. |
-| `revision_gate.py` | Pareto filter: accepts a revision only if ≥1 criterion improves via the calibrated judge and none regress. |
+| `revision_gate.py` | Pareto filter: accepts a revision only if ≥1 criterion improves via the calibrated judge and none regress. Module fully implemented + unit-tested; the graph-node integration in `hybrid_graph.py` is stubbed in the high-severity branch (see `docs/architecture.md` §5). |
 | `thesis_outline.py` | Explodable Architecture B — Toulmin-complete sections over `fear-commit → logic-recruit → testimony-deploy` stage vocabulary with structural contract validation. |
 
 ## The production / experimental boundary

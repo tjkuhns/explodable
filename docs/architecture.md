@@ -234,7 +234,19 @@ These stages live in the hybrid graph, not the production graph.
 - `src/content_pipeline/experimental/revision_gate.py:142` —
   `revision_gate()`. Pareto filter via the calibrated judge. A
   revision is accepted only if at least one criterion improves and
-  none regress.
+  none regress. The module is fully implemented and unit-tested
+  (`tests/test_revision_gate.py`).
+
+**Known integration gap.** The `revision_gate_node` in `hybrid_graph.py`
+only calls the Pareto filter in two of its three branches (zero
+proposals, zero high-severity proposals). In the high-severity branch
+— where a revised draft would actually need to be generated and gated —
+the node currently returns `revision_accepted=None` with reason
+`"revision pending"` (see `hybrid_graph.py:511`). Implication: the
+phase 2 N=50 benchmark scored original drafts only; no revised drafts
+were generated. The node's presence in the pipeline diagram reflects
+the target architecture, not the currently-executing one. Wiring the
+drafter call into this branch is tracked as open work.
 
 The production content pipeline uses BVCS scoring for voice compliance
 and the standard HITL gate for quality judgment. Adversarial critique
