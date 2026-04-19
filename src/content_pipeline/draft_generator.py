@@ -1,7 +1,10 @@
 """Draft Generator — generates long-form content from outline + voice profile.
 
-Supports two brands (The Boulder, Explodable) and two output types
-(newsletter, brief). Loads voice profile YAML from config/ at runtime —
+Explodable is the only active brand. The module retains prompt builders
+for a legacy "the_boulder" brand argument, but the Boulder voice YAML
+was retired and invoking with brand="the_boulder" now fails at voice
+profile load. Three output types are supported: newsletter, brief,
+standalone_post. Voice profile is loaded from config/ at runtime —
 never hardcodes voice parameters.
 
 Output types:

@@ -1,235 +1,35 @@
 # ============================================================
-# Editorial Calendar — The Boulder (v1)
-# Explodable Content Pipeline Configuration
+# Explodable Content Pipeline — Runtime Config
 # ============================================================
-# This file is the trigger configuration for the content pipeline.
-# The pipeline reads this file to determine when to run, what
-# cadence to use, and what constraints apply to each run.
+# This file is consumed by `src/content_pipeline/graph.py` at
+# the `calendar_trigger` node. The pipeline reads the retrieval
+# parameters for the active brand.
 #
-# V1 scope: The Boulder only. One brand, one cadence.
-# When additional brands are added, append to the brands section
-# following the same structure.
+# Retired 2026-04-18: publishing cadence, social variants,
+# multi-brand staggering, Substack/Buttondown wiring. The product
+# is Explodable-only; operator drives publishing manually from
+# `drafts/` via the chat-native `generate-content` skill.
 # ============================================================
 
-pipeline_version: "1.1"
-operator: "thomas_kuhns"
-timezone: "America/New_York"
-
-# ============================================================
-# OPERATING MODE
-# ============================================================
-# As of 2026-04-13 (Phase 0), Celery Beat schedule is intentionally
-# empty — src/shared/tasks.py sets beat_schedule = {}. Every pipeline
-# run is triggered manually by the operator via the UI or API:
-#   - POST /api/research/run (research pipeline)
-#   - POST /api/generate/content (content pipeline, all output types)
-#   - POST /api/research/upload (research doc extraction)
-# The cadence/frequency/publish_day fields below are documentary —
-# they describe the target publishing rhythm the operator is working
-# toward, not an active schedule that anything reads. When autonomous
-# scheduling is re-enabled, add entries to app.conf.beat_schedule in
-# src/shared/tasks.py AND reconcile with docs/gtm_notes.md.
-# ============================================================
-
-# ============================================================
-# BRANDS
-# One entry per active brand. Add new brands here when ready.
-# ============================================================
+pipeline_version: "2.0"
 
 brands:
-
-  the_boulder:
-    display_name: "The Boulder"
-    status: active
-    voice_profile: "voice_profile_the_boulder.yaml"
-    platform: substack
-    publish_mode: draft  # Operator manually publishes from Substack draft
-
-    # Target publishing cadence (documentary — not an active schedule,
-    # see OPERATING MODE header above).
-    cadence:
-      frequency: weekly
-      publish_day: tuesday        # Target publish day
-      publish_time: "07:00"       # ET — catches morning reading window
-
-    # Content length targets
-    content:
-      newsletter_word_count:
-        min: 1500
-        target: 2000
-        max: 2500
-      social_variants:
-        - platform: x
-          format: single_post
-          char_limit: 280
-        - platform: x
-          format: thread
-          max_posts: 5
-        - platform: linkedin
-          format: post
-          word_target: 700
-        - platform: substack_notes
-          format: short
-          word_target: 80
-
-    # KB retrieval parameters for this brand
-    retrieval:
-      decay_weight: 0.30          # Weight on recency in scoring formula
-      semantic_weight: 0.70       # Weight on semantic similarity
-      half_life_days: 14          # Findings older than 14 days decay by half
-      min_confidence: 0.45        # Don't surface findings below this threshold
-      max_findings_per_draft: 8   # Cap to prevent kitchen-sink drafts
-      preferred_domains:          # Soft preference, not hard filter
-        - political psychology
-        - consumer behavior
-        - philosophy
-        - media studies
-        - neuroscience
-        - cultural criticism
-
-    # HITL gate configuration
-    hitl:
-      gate_1: outline_approval    # Operator approves outline before draft generation
-      gate_2: draft_approval      # Operator approves final draft before publish
-      gate_1_timeout_hours: 48    # If not approved in 48hrs, hold and notify
-      gate_2_timeout_hours: 48
-
-    # BVCS thresholds
-    voice_compliance:
-      scoring_rubric: "bvcs_rubric_the_boulder.yaml"
-      pass_threshold: 70          # Auto-revise if below 70
-      max_revision_attempts: 3    # Give up and flag for operator after 3 attempts
-      score_disclosure: delayed   # Show score after operator reads draft, not before
-
-    # Substack configuration
-    substack:
-      publication_url: "TBD"      # Set when Substack publication is created
-      post_status: draft          # Always create as draft, never auto-publish
-      section: null               # No sections in v1
-      paywall_position: 0.27      # Break at 27% — within optimal 25-30% range
-
   explodable:
     display_name: "Explodable"
     status: active
     voice_profile: "voice_profile_explodable.yaml"
-    platform: buttondown  # Explodable register mismatches Substack — Buttondown preferred
-    publish_mode: draft  # Operator manually publishes from Buttondown draft
 
-    # Target publishing cadence (documentary — not an active schedule,
-    # see OPERATING MODE header above).
-    cadence:
-      frequency: weekly
-      publish_day: thursday       # Target publish day (staggered from Boulder)
-      publish_time: "07:00"       # ET — catches morning reading window
-
-    # Content length targets
-    content:
-      newsletter_word_count:
-        min: 600
-        target: 900
-        max: 1200
-      social_variants:
-        - platform: x
-          format: single_post
-          char_limit: 280
-        - platform: x
-          format: thread
-          max_posts: 5
-        - platform: linkedin
-          format: post
-          word_target: 300
-        - platform: substack_notes
-          format: short
-          word_target: 80
-
-    # KB retrieval parameters for this brand
+    # KB retrieval parameters — consumed by kb_retriever_node
     retrieval:
-      decay_weight: 0.30          # Weight on recency in scoring formula
-      semantic_weight: 0.70       # Weight on semantic similarity
-      half_life_days: 14          # Findings older than 14 days decay by half
-      min_confidence: 0.45        # Don't surface findings below this threshold
-      max_findings_per_draft: 8   # Cap to prevent kitchen-sink drafts
-      preferred_domains:          # Soft preference, not hard filter
-        - behavioral economics
-        - organizational psychology
-        - b2b psychology
-        - consumer psychology
-        - decision science
-        - social psychology
+      decay_weight: 0.30           # recency weight in scoring formula
+      semantic_weight: 0.70        # semantic similarity weight
+      half_life_days: 14           # findings older than 14 days decay by half
+      min_confidence: 0.45         # floor below which findings are skipped
+      max_findings_per_draft: 8
 
-    # HITL gate configuration
-    hitl:
-      gate_1: outline_approval    # Operator approves outline before draft generation
-      gate_2: draft_approval      # Operator approves final draft before publish
-      gate_1_timeout_hours: 48    # If not approved in 48hrs, hold and notify
-      gate_2_timeout_hours: 48
-
-    # BVCS thresholds
+    # BVCS (voice compliance) thresholds — consumed by bvcs_scorer_node
     voice_compliance:
       scoring_rubric: "bvcs_rubric_explodable.yaml"
-      pass_threshold: 70          # Auto-revise if below 70
-      max_revision_attempts: 3    # Give up and flag for operator after 3 attempts
-      score_disclosure: delayed   # Show score after operator reads draft, not before
-
-    # Substack configuration
-    substack:
-      publication_url: "TBD"      # Set when Substack publication is created
-      post_status: draft          # Always create as draft, never auto-publish
-      section: null               # No sections in v1
-      paywall_position: 0.27      # Break at 27% — within optimal 25-30% range
-
-# ============================================================
-# RESEARCH PIPELINE — operator-triggered only
-# ============================================================
-# The research pipeline runs on demand via POST /api/research/run
-# or via POST /api/research/upload for doc ingestion. No schedule.
-# The hitl_queue parameters below describe the target review UX —
-# batch window, priority sort, auto-approve threshold — but current
-# implementation surfaces findings individually at HITL gate 1 as
-# they land. Auto-approve threshold is aspirational, not wired.
-# ============================================================
-
-research_pipeline:
-  hitl_queue:
-    auto_approve_threshold: 0.90  # Aspirational — not yet wired
-    individual_review_threshold: 0.85
-
-  # Source diversity targets (soft — advisory, not enforced)
-  source_diversity:
-    max_same_domain_per_run: 3
-    academic_min_ratio: 0.25
-    recency_bias:
-      prefer_last_n_days: 90
-      min_older_ratio: 0.20
-
-# ============================================================
-# AGENT DRIFT MONITORING — operator-triggered
-# ============================================================
-# Run manually via `python -m src.shared.drift_monitor --run-now`.
-# Thresholds below are used by drift_monitor.py for deviation alerts.
-# ============================================================
-
-drift_monitoring:
-  benchmark_file: "benchmark_prompts.md"
-  alert_threshold:
-    single_prompt_deviation: 0.15
-    overall_deviation: 0.10
-  alert_routing: operator_queue
-
-# ============================================================
-# PERFORMANCE FEEDBACK — deferred
-# ============================================================
-# V1: manual input only. No Substack API / Buttondown API
-# integration yet. The engagement → confidence feedback loop is
-# deferred until (a) a newsletter platform is live and (b) enough
-# issues have shipped to produce signal.
-# ============================================================
-
-performance_feedback:
-  status: deferred
-  methodology: >
-    When activated: findings used in high-performing issues (top
-    quartile open rate) receive +0.02 confidence adjustment. Findings
-    used in low-performing issues (bottom quartile) receive -0.01.
-    Adjustments capped at ±0.10 from original score and logged with
-    rationale.
+      pass_threshold: 70
+      max_revision_attempts: 3
+      score_disclosure: delayed    # score shown to operator AFTER read

@@ -49,11 +49,11 @@ class OutlineSection(BaseModel):
 class NewsletterOutline(BaseModel):
     """Structured outline for a long-form newsletter (brand-neutral schema).
 
-    Brand-specific structural patterns (e.g. Boulder's "Unexpected
-    Juxtaposition" / "Lingering Exit" or Explodable's diagnostic opener)
-    are specified in the system prompt, not in these field descriptions,
-    so the same schema serves both brands without leaking Boulder's
-    concepts into Explodable generations or vice versa.
+    Brand-specific structural patterns live in the system prompt, not
+    these field descriptions, so the same schema can serve multiple
+    brands. Explodable is the only active brand; the schema was
+    originally designed to avoid leaking Boulder concepts into
+    Explodable output when both brands were live.
     """
 
     title: str = Field(description="Working title — evocative, not descriptive. No clickbait.")

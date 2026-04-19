@@ -8,7 +8,7 @@ An AI content engine that produces analytical essays about B2B buyer psychology,
 
 ---
 
-**Built entirely through AI pair programming with Claude Code.** The pipeline architecture, the evaluation harness, the knowledge graph, and the 25 research reports grounding every design decision were all produced through agentic engineering — directing AI systems to implement, then measuring whether the output is actually good.
+**Built entirely through AI pair programming with Claude Code.** The pipeline architecture, the evaluation harness, the knowledge graph, and the 20 research reports grounding the design decisions were all produced through agentic engineering — directing AI systems to implement, then measuring whether the output is actually good.
 
 ---
 
@@ -22,11 +22,16 @@ An AI content engine that produces analytical essays about B2B buyer psychology,
 
 ## Key findings
 
-**Thesis-as-structural-schema is the biggest quality driver.** Encoding the brand thesis ("Buyers don't decide with logic. They decide with fear, then hire logic to testify.") as a structural constraint in the outline stage — where each section must instantiate the fear→testimony mechanism — produced an **8-point improvement** over standard prompting. Validated at N=50.
+**Thesis-as-structural-schema is the biggest quality driver.** Encoding the thesis ("Buyers don't decide with logic. They decide with fear, then hire logic to testify.") as a structural constraint in the outline stage — where each section must instantiate the fear→testimony mechanism — produced an **8-point improvement** over standard prompting. Validated at N=50.
 
 **CAG (full-context stuffing) fails for long-form generation.** Tested in a controlled 3-way bake-off: CAG scored 26.3 vs Wiki's 32.0 vs the existing retrieval pipeline's 32.6. Every published CAG evaluation is on QA tasks. This is a negative result on a generation task.
 
-**Cross-domain synthesis improved +13 points** on a single cross-domain topic — vector retrieval (23.0) vs. wiki-style index scanning + graph expansion (36.0). An N=50 replication confirmed the effect with wide variance (mean 32.2, interval 27.7–36.7) — the improvement is real but noisier than the single-topic result suggested.
+**Cross-domain delta, decomposed.** On one cross-domain topic (T3: B2B vendor lock-in × religious conversion, N=1):
+- Production retrieval pipeline: 23.0
+- Wiki-style index scanning (Pipeline C bakeoff): 32.0 (+9)
+- Full hybrid pipeline (Wiki + graph expansion + thesis-constrained outline): 36.0 (+13)
+
+The +9 Wiki-alone delta is from the Phase 1 bakeoff; the +13 hybrid delta is from the Phase 2 smoke test. An N=50 replication showed cross-domain topics scored 32.2 on average with a wide confidence interval (27.7–36.7). Single-topic deltas overstate the N=50 effect; the improvement is real but noisier than the T3 result suggests.
 
 ## Evaluation methodology
 
@@ -42,31 +47,37 @@ Quality is measured by a 10-criterion LLM-as-judge rubric covering thesis clarit
 
 ## Architecture
 
+Two pipelines share one knowledge base. The **production pipeline** runs content generation via Celery; the **experimental (hybrid) pipeline** is used for measurement runs and ablation studies. Full details and `file:line` references in [docs/architecture.md](docs/architecture.md).
+
+### Production pipeline (`src/content_pipeline/graph.py`)
+
 ```
-topic_router ─────── classifies topic, routes to optimal retrieval
-  ├─ wiki_selector ── reads KB index, picks findings across domains
-  ├─ vector_retriever ── pgvector similarity search within cluster
-  └─ graph_walker ──── PPR traversal + MMR diversity reranking
-         │
-graph_expander ────── adds cross-domain findings via relationship graph
-         │
-outline_generator ─── thesis-constrained (Architecture B)
-         │               each section must instantiate fear→testimony
-         │               mechanism, not just discuss the topic
-         │
-draft_generator ───── focused context, voice profile, citations
-         │
-bvcs_scorer ────────── voice compliance check
-         │
-adversarial_critic ── different model reads full KB + draft,
-         │               identifies weak claims, missing evidence,
-         │               structural problems
-         │
-revision_gate ─────── Pareto filter: accept revision only if
-         │               ≥1 quality criterion improves, none regress
-         │
-quality_gate ──────── calibrated judge + execution gate
+calendar_trigger → kb_retriever → content_selector
+     ├─ outline_generator ──── hitl_gate (outline review)
+     └─ standalone_post_generator
+          │
+draft_generator ─── voice profile, inline citation markers
+     │
+bvcs_scorer ────── voice compliance; auto-revise loop if <70, max 3
+     │
+hitl_gate (draft review) → publisher → END
 ```
+
+Retrieval includes graph expansion: top-5 semantic results become PPR seeds, one-hop walk via typed relationships, neighbors scored by `seed_score × relationship_weight × edge_confidence`.
+
+### Experimental pipeline (`src/content_pipeline/experimental/hybrid_graph.py`)
+
+```
+topic_router ──── [wiki_selector | vector_retriever | graph_walker]
+     │
+graph_expander ── PPR + MMR diversity reranking (explicit stage)
+     │
+thesis_outline ── Architecture B: fear-commit → logic-recruit → testimony-deploy
+     │
+draft_generator → bvcs_scorer → adversarial_critic → revision_gate → publisher
+```
+
+The experimental graph is where architecture changes are measured against the calibrated judge on the N=50 test set before being promoted. See [src/content_pipeline/experimental/README.md](src/content_pipeline/experimental/README.md) for the production/experimental boundary and promotion criteria.
 
 ## The knowledge base
 
@@ -77,7 +88,7 @@ quality_gate ──────── calibrated judge + execution gate
 - **763 typed relationships** — supports, extends, qualifies, reframes, subsumes, contradicts
 - **24 cultural domains** — from competitive systems (110 findings) to heroism (6)
 
-85% of relationship edges connect findings across different cultural domains. Most RAG systems retrieve semantically similar documents; this one retrieves across taxonomic distance on purpose, because B2B buyer psychology requires pulling from unrelated domains (religious conversion, addiction architecture, competitive sports) to produce non-obvious synthesis. That's the architectural bet — and the cross-domain +13 result is the evidence it pays off.
+85% of relationship edges connect findings across different cultural domains. Most RAG systems retrieve semantically similar documents; this one retrieves across taxonomic distance on purpose, because B2B buyer psychology requires pulling from unrelated domains (religious conversion, addiction architecture, competitive sports) to produce non-obvious synthesis. That's the architectural bet — and the cross-domain delta on T3 (single-topic, N=1) is the first evidence it pays off; the N=50 replication shows the effect persists with wide variance.
 
 ## Built with
 
@@ -99,7 +110,7 @@ src/kb/                   knowledge base models, embeddings, ingestion
 config/                   voice profiles, rubrics, domain configs
 scripts/                  evaluation, compilation, testing
 docs/                     architecture, results, eval methodology
-docs/research/            25 research reports grounding design decisions
+docs/research/            20 research reports grounding design decisions
 demo/                     Streamlit app (explodable.streamlit.app)
 ```
 
@@ -124,18 +135,33 @@ python scripts/score_drafts_and_calibrate.py
 python scripts/check_export_gate.py drafts/
 ```
 
+## The eval harness, repurposed for code quality
+
+The same evaluation harness that scores long-form essays also scores Python code quality. Methodology transferred without modification: structured rubric in YAML, LLM judge with per-criterion scoring, anchor exemplars at 1/3/5 levels, weighted criteria, veto rules. Six criteria grounded in Clean Code (Martin), A Philosophy of Software Design (Ousterhout), PEP 8/257, and Google's Python Style Guide — naming clarity, readability & structure, architectural fit, documentation quality, error handling, testability.
+
+Proposed as a feature contribution to Braintrust's `autoevals`:
+
+- **Issue:** [braintrustdata/autoevals#185](https://github.com/braintrustdata/autoevals/issues/185)
+- **Rubric:** [config/rubrics/python_code_quality.yaml](config/rubrics/python_code_quality.yaml)
+- **Runner:** [scripts/score_code.py](scripts/score_code.py)
+- **Methodology research:** [docs/research/code_judge_report.md](docs/research/code_judge_report.md)
+
+The code judge itself is not yet calibrated against human reviewers — the essay judge's ρ = 0.841 against the 5-model panel does not transfer automatically to the code domain. Calibration against human labels is the next piece of work.
+
 ## Research foundation
 
-25 research reports organized in three phases:
+20 research reports grounding the engineering decisions:
 
-- **Phase 0** (7 reports) — [evaluation harness design](docs/research/phase0_reports/), coherence metrics, CAG feasibility
-- **Hybrid architecture** (6 reports) — [GraphRAG, routed retrieval, adversarial critique, CQRS, stage-wise selection](docs/research/hybrid_reports/)
-- **Content + strategic** (12 reports) — [thesis prompting, editorial workflow, market analysis, competitive landscape](docs/research/content_reports/)
+- **Phase 0** (7 reports) — [evaluation harness design, coherence metrics, CAG feasibility, rubric research](docs/research/phase0_reports/)
+- **Hybrid architecture** (7 reports) — [GraphRAG, routed retrieval, adversarial critique, CQRS, stage-wise selection, multimodal DB, per-stage-architecture generalizability](docs/research/hybrid_reports/)
+- **Content methodology** (3 reports) — [thesis prompting, DSPy optimization, editorial workflow](docs/research/content_reports/)
+- **Code judge** (2 reports) — [prompt spec](docs/research/code_judge_prompt.md), [gap analysis + implementation plan](docs/research/code_judge_report.md)
+- **Architecture blueprint** (1 report) — [dual-pipeline LangGraph + CQRS + HITL design reference](docs/research/blueprint_reference.md)
 
-Each architectural decision traces to a specific research finding.
+Each architectural decision in the content pipeline traces to a specific engineering research finding. The code judge reports back the methodology transfer to Python code quality.
 
 ## What's next
 
-- **Content audit mode** — reverse the engine. Instead of producing content from the KB, score external content *against* the KB. Feed it a sales deck, a competitor's landing page, or a pitch email and surface where the claims contradict the behavioral science, where fear mechanisms are missing, and where the framing triggers the wrong anxiety. The retrieval and KB infrastructure exists; this is a new prompt layer on top of it.
-- **Cross-domain application** — apply the eval harness methodology to legal or financial document analysis to validate generalizability beyond B2B buyer psychology.
-- **Standalone eval harness** — extract the judge + multi-model calibration into an independent package. `pip install`, give it a rubric and a set of drafts, get calibrated scores.
+- **Cross-domain application** — apply the eval harness methodology to a third domain (legal memos, medical note quality, or research paper review) to validate generalizability beyond essays and Python code.
+- **Standalone eval harness package** — extract the judge + multi-model calibration protocol into an installable package. `pip install`, give it a rubric and drafts, get calibrated scores.
+- **Human-validated calibration for the code judge** — close the gap between "the methodology transferred" and "the judge is calibrated" via 10–20 human rankings on a code-quality subset.

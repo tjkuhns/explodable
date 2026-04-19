@@ -28,8 +28,9 @@ Previously scheduled entries (all removed 2026-04-13 Phase 0):
 - performance-feedback-monday
 - drift-monitoring-sunday
 
-To re-enable autonomous scheduling, add entries to app.conf.beat_schedule —
-but first reconcile with docs/gtm_notes.md which commits to operator-driven mode.
+To re-enable autonomous scheduling, add entries to app.conf.beat_schedule.
+Operator-driven mode is the current commitment — see memory
+(project_explodable_current.md) for the current operating model.
 """
 
 import structlog

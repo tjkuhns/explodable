@@ -127,7 +127,7 @@ with st.sidebar:
     5. **Draft** generates with citations
     6. **Adversarial critic** (Gemini Flash)
     7. **Revision gate** Pareto filter
-    8. **Judge** calibrated 10-criterion rubric
+    8. **Judge** 10-criterion rubric, calibrated against a 5-model cluster (ρ = 0.841 Opus / 0.782 Sonnet)
     """)
 
     st.markdown("---")
@@ -224,8 +224,8 @@ with col1:
     st.metric("Thesis outline effect", "+8 points",
               help="Encoding the thesis as a structural schema vs standard prompting. Validated at N=50.")
 with col2:
-    st.metric("Cross-domain improvement", "+13 points",
-              help="Wiki index scan + graph expansion vs vector retrieval on cross-domain topics.")
+    st.metric("Cross-domain delta", "+9 / +13",
+              help="Single-topic bakeoff (N=1): Wiki alone +9, full hybrid pipeline +13 vs production retrieval. N=50 replication confirmed the effect with wide variance (27.7–36.7).")
 with col3:
     st.metric("Judge calibration", "ρ = 0.841",
               help="Spearman correlation against a 5-model editorial panel.")
@@ -238,8 +238,8 @@ with col5:
     st.metric("Validation topics", "N=50",
               help="Dense, medium, sparse, cross-domain, and out-of-distribution conditions.")
 with col6:
-    st.metric("Cost per draft", "$0.09",
-              help="3.3x cheaper than the monolithic retrieval pipeline at $0.30.")
+    st.metric("Cost per draft (Wiki)", "~$0.03",
+              help="Phase 1 bakeoff estimate (N=5 topics). Production pipeline was ~$0.30 per draft; Wiki-retrieval ran ~10× cheaper.")
 
 
 # ── KB explorer ──

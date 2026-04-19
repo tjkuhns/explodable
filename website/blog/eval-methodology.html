@@ -132,7 +132,7 @@ article h1{font-size:28px}
 
 <p><strong>CAG fails for long-form generation.</strong> Cache-Augmented Generation — stuffing the entire knowledge base (115K tokens) into the context window — scored 26.3 vs 32.0 for focused approaches. Every published CAG evaluation is on QA tasks. This is a negative result on a generation task. The model appears to suffer from selection paralysis — too many findings available, not enough signal to discriminate.</p>
 
-<p><strong>Cross-domain synthesis improved +13 points</strong> when switching from vector retrieval to wiki-style index scanning + graph expansion on topics requiring synthesis across unrelated fields. At N=50, this narrowed to +9 with wide variance — still real, but noisier than one run suggested. Both numbers are in the repo.</p>
+<p><strong>Cross-domain delta, decomposed.</strong> On one cross-domain bakeoff topic (T3: B2B vendor lock-in × religious conversion), the full hybrid pipeline (Wiki retrieval + graph expansion + thesis-constrained outline) scored 36.0 vs the production retrieval pipeline's 23.0 — a +13 delta. Wiki retrieval alone accounted for +9 of those (32.0); graph expansion and thesis outline added the rest. Single-topic numbers (N=1). An N=50 replication showed cross-domain topics scored 32.2 on average with a wide confidence interval (27.7–36.7) — the effect persists but the single-topic delta overstated it.</p>
 
 <h2>Then I transferred the whole thing to code review in an afternoon</h2>
 
@@ -189,7 +189,7 @@ article h1{font-size:28px}
 
 <h2>The repo</h2>
 
-<p>Everything is open: the essay rubric, the code quality rubric, the judge implementation, the calibration data, and the 25 research reports that grounded the design decisions. Built through AI pair programming with Claude Code.</p>
+<p>Everything is open: the essay rubric, the code quality rubric, the judge implementation, the calibration data, and the 20 research reports that grounded the design decisions. Built through AI pair programming with Claude Code.</p>
 
 <p><a href="https://github.com/tjkuhns/explodable">github.com/tjkuhns/explodable</a> · <a href="https://explodable.streamlit.app">Live demo</a></p>
 

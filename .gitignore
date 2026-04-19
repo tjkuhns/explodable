@@ -21,7 +21,7 @@ node_modules/
 *:Zone.Identifier
 inbox/
 celerybeat-schedule*
-archive/
+.internal/
 logs/
 kb_wiki/
 cache/

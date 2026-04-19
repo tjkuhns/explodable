@@ -58,8 +58,8 @@ class ContentState(BaseModel):
     topic: str = ""
     brand: str = "the_boulder"
     # Output type determines which prompt builders and which output shape:
-    # - "newsletter": long-form essay + social variants, both brands
-    # - "brief": Explodable-only Buyer Intelligence Brief, 5-section
+    # - "newsletter": long-form essay + social variants
+    # - "brief": Explodable Buyer Intelligence Brief, 5-section
     #   diagnostic structure, no social variants
     output_type: str = "newsletter"
     # Only used for output_type="brief": the specific client situation the

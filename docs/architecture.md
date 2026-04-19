@@ -85,11 +85,13 @@ START → calendar_trigger → kb_retriever → content_selector
 
 Three output types dispatched off `state.output_type`:
 
-| Output type | Outline | Social variants | Length | Brands |
-|---|---|---|---|---|
-| `newsletter` | Full | X, LinkedIn, Substack | 1500–2500 words | Both |
-| `brief` | 5-section rigid | None | 1500–2500 words | Explodable only |
-| `standalone_post` | Skipped | None | 300–500 words | Both |
+| Output type | Outline | Social variants | Length |
+|---|---|---|---|
+| `newsletter` | Full | X, LinkedIn, Substack Notes | 600–2500 words |
+| `brief` | 5-section rigid | None | 1500–2500 words |
+| `standalone_post` | Skipped | None | 300–500 words |
+
+Explodable is the only active brand. The code still accepts a `brand` parameter and the `draft_generator` has prompt builders for a second "the_boulder" register, but the Boulder voice profile config was retired — invoking the pipeline with `brand="the_boulder"` will fail on missing voice profile. Single-brand operation is the intentional current state.
 
 ### Retrieval
 
@@ -135,9 +137,13 @@ Guarantees at least one cross-domain finding per selection if any exist.
 ### Draft generation
 
 `src/content_pipeline/draft_generator.py:1062` — `generate_draft()`.
-Dispatches on (brand, output_type) to one of six prompt builders, one
-per permutation of {Boulder, Explodable} × {newsletter, brief,
-standalone_post} minus the invalid `(Boulder, brief)` pair.
+Dispatches on (brand, output_type). The module ships six prompt
+builders — Explodable's three output types plus three residual
+builders for a second "the_boulder" register — but only Explodable is
+exercised in production. Invoking with `brand="the_boulder"` now
+fails at `load_voice_profile()` because the Boulder voice YAML was
+retired. The residual builders remain as dead code pending a
+follow-up pass.
 
 Three citation modes controlled by env flags:
 
