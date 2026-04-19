@@ -11,7 +11,14 @@ logs/*.log.*
 logs/celerybeat-schedule*
 logs/relationship_review_queue.json
 logs/backfill_unresolved.json
-.claude/
+# Claude Code: gitignore everything by default, then selectively un-ignore
+# the parts that should travel with the repo (skills, slash commands,
+# statusline, handoff template). Settings (incl. local) stay ignored.
+.claude/*
+!.claude/commands/
+!.claude/skills/
+!.claude/statusline.sh
+!.claude/handoff.md
 nohup.out
 drafts/
 .venv/
