@@ -122,7 +122,7 @@ nav .links{gap:14px;font-size:13px}
 <div class="container">
 <h1>AI content engine for B2B buyer psychology</h1>
 <p class="subtitle">
-A multi-stage pipeline that produces analytical essays grounded in 305 behavioral-science findings. Each stage uses the AI architecture empirically validated for that stage's cognitive task type.
+A multi-stage pipeline producing analytical essays from a structured knowledge base of behavioral-science findings. Two pipelines share the KB: a production graph that runs every draft, and an experimental graph used to measure architecture changes before promoting them.
 </p>
 <div class="cta-row">
 <a href="https://explodable.streamlit.app" class="btn btn-primary" target="_blank">Try the demo →</a>
@@ -156,7 +156,7 @@ A multi-stage pipeline that produces analytical essays grounded in 305 behaviora
 </div>
 <div class="metric">
 <div class="number">~$0.03</div>
-<div class="label">Wiki retrieval per draft vs ~$0.30 production pipeline — Phase 1 bakeoff estimate (N=5 topics)</div>
+<div class="label">Per draft in the current (Wiki-based) production pipeline vs ~$0.30 in the prior pipeline it replaced — Phase 1 bakeoff, N=5 topics (<a href="https://github.com/tjkuhns/explodable/blob/main/docs/decisions/0005-wiki-retrieval-production-pipeline.md" style="color:var(--accent)">ADR-0005</a>)</div>
 </div>
 </div>
 <p style="color:var(--text-muted);font-size:14px;margin-top:32px;line-height:1.6;max-width:720px;margin-left:auto;margin-right:auto;text-align:center">Known methodology limits: the 5-model calibration cluster was derived by dropping 2 outlier models post-hoc; the cross-domain deltas (+9 Wiki-alone, +13 full hybrid) came from a single bakeoff topic, and the N=50 replication confirmed the effect with wide variance (mean 32.2, interval 27.7–36.7). <a href="https://github.com/tjkuhns/explodable/blob/main/docs/eval-methodology.md" style="color:var(--accent)">Full disclosure →</a></p>
@@ -178,23 +178,48 @@ The mid-market sits in a decision-making dead zone. Too big for intuitive founde
 <section class="how" id="how">
 <div class="container">
 <h2>Architecture</h2>
-<div class="pipeline"><span class="hl">topic_router</span> ─────── classifies topic, routes to optimal retrieval
+<p style="color:var(--text-muted);font-size:15px;margin-bottom:32px;max-width:680px">Two graphs share one knowledge base. The production graph runs every draft; the experimental graph is the measurement surface where architecture changes are evaluated before promotion. The split is deliberate — it lets architecture decisions be driven by measured results rather than opinion.</p>
+
+<h3 style="font-size:18px;font-weight:600;margin:0 0 8px;color:var(--text)">Production pipeline</h3>
+<p style="color:var(--text-dim);font-size:13px;margin-bottom:16px"><code style="font-family:var(--font-mono)">src/content_pipeline/graph.py:671</code> · runs every draft · Wiki-based retrieval (<a href="https://github.com/tjkuhns/explodable/blob/main/docs/decisions/0005-wiki-retrieval-production-pipeline.md" style="color:var(--accent)">ADR-0005</a>)</p>
+<div class="pipeline"><span class="hl">calendar_trigger</span> ──── scheduled topic from editorial calendar
+       │
+<span class="hl">kb_retriever</span> ──────── multi-query retrieval + decay-weighted scoring
+       │
+<span class="hl">content_selector</span> ──── ranks + enforces ≥1 cross-domain finding
+       │
+<span class="hl">outline_generator</span> ─── thesis-constrained outline
+       │                   (fear-commit → logic-recruit → testimony-deploy)
+<span class="ac">HITL gate</span> ─────────── outline review
+       │
+<span class="hl">draft_generator</span> ───── voice profile, inline citation markers
+       │
+<span class="hl">bvcs_scorer</span> ───────── voice compliance (fail → revise, max 3 loops)
+       │
+<span class="ac">HITL gate</span> ─────────── draft review
+       │
+<span class="hl">publisher_stub</span> ────── write markdown to disk</div>
+
+<h3 style="font-size:18px;font-weight:600;margin:48px 0 8px;color:var(--text)">Experimental pipeline</h3>
+<p style="color:var(--text-dim);font-size:13px;margin-bottom:16px"><code style="font-family:var(--font-mono)">src/content_pipeline/experimental/hybrid_graph.py:596</code> · measurement surface, not production · adversarial critique + revision gating live here because they're being evaluated, not because they're live</p>
+<div class="pipeline"><span class="hl">topic_router</span> ───────── classifies topic, routes to retrieval strategy
   ├─ <span class="ac">wiki_selector</span> ── reads KB index, picks findings across domains
   ├─ <span class="ac">vector_retriever</span> ── pgvector similarity search within cluster
   └─ <span class="ac">graph_walker</span> ──── PPR traversal + MMR diversity reranking
-         │
+       │
 <span class="hl">graph_expander</span> ────── adds cross-domain findings via relationship graph
-         │
-<span class="hl">outline_generator</span> ─── thesis-constrained (Architecture B)
-         │               each section instantiates fear→testimony
-         │
+       │
+<span class="hl">outline_generator</span> ─── thesis-constrained
+       │
 <span class="hl">draft_generator</span> ───── focused context, voice profile, citations
-         │
-<span class="hl">adversarial_critic</span> ── different model reads full KB + draft
-         │
+       │
+<span class="hl">bvcs_scorer</span> ───────── voice compliance (fail → revise, max 3)
+       │
+<span class="hl">adversarial_critic</span> ── a different model reads full KB + draft
+       │
 <span class="hl">revision_gate</span> ─────── Pareto filter: improve without regressing
-         │
-<span class="hl">quality_gate</span> ──────── calibrated judge + execution gate</div>
+       │
+<span class="ac">HITL gate</span> ─────────── draft review → publisher</div>
 </div>
 </section>
 
@@ -219,9 +244,9 @@ The mid-market sits in a decision-making dead zone. Too big for intuitive founde
 <div class="kb-detail">Competitive systems · Wealth · Tribalism · Technology · Religion · +19 more</div>
 </div>
 <div class="kb-item">
-<div class="kb-label">Cross-domain edges</div>
-<div class="kb-value">85%</div>
-<div class="kb-detail">Of all relationship edges connect findings across different domains</div>
+<div class="kb-label">Relationship types</div>
+<div class="kb-value">6</div>
+<div class="kb-detail">supports · extends · qualifies · subsumes · reframes · contradicts — each edge carries a rationale</div>
 </div>
 </div>
 </div>

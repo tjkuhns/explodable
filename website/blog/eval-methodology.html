@@ -84,6 +84,8 @@ article h1{font-size:28px}
 <h1>I calibrated an LLM judge against 7 models. Then I transferred it to code review in an afternoon.</h1>
 <div class="meta">Tom Kuhns · April 2026 · Youngstown, OH</div>
 
+<div class="callout" style="margin-bottom:32px"><p style="font-size:14px"><strong>Context note.</strong> This post documents work done when the project was positioned as a B2B consulting practice. That direction has since been retired in favor of AI-engineering employment (<a href="https://github.com/tjkuhns/explodable/blob/main/docs/decisions/0010-consulting-direction.md">ADR-0010</a>). The calibration criterion and language are preserved verbatim below because the ρ = 0.841 measurement is tied to this exact prompt — rewriting it would invalidate the measurement.</p></div>
+
 <p>Most LLM evaluation measures whether the model got the answer right. I needed to measure whether an AI-generated analytical essay was good enough for a B2B executive to take seriously. Those are different problems, and standard eval tools don't solve the second one.</p>
 
 <p>So I built an evaluation harness. It took weeks. Then I adapted the same harness to evaluate Python code quality. That took an afternoon. The fact that the second one was trivial is the whole point of this post.</p>
@@ -192,6 +194,21 @@ article h1{font-size:28px}
 <p>Everything is open: the essay rubric, the code quality rubric, the judge implementation, the calibration data, and the 20 research reports that grounded the design decisions. Built through AI pair programming with Claude Code.</p>
 
 <p><a href="https://github.com/tjkuhns/explodable">github.com/tjkuhns/explodable</a> · <a href="https://explodable.streamlit.app">Live demo</a></p>
+
+<h2>Receipts</h2>
+<p>Every load-bearing claim in this post links to a canonical source in the repo. If something here doesn't match what the code or data says, the code and data win.</p>
+<ul>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/docs/decisions/0003-eval-harness-as-scalable-validation.md">ADR-0003</a> — why LLM-as-judge in place of a human panel</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/docs/decisions/0005-wiki-retrieval-production-pipeline.md">ADR-0005</a> — wiki retrieval adopted as production, CAG retired as negative result</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/docs/decisions/0006-issue-first-oss-contribution.md">ADR-0006</a> — why the code judge was proposed as a feature issue, not a cold PR</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/docs/phase0_calibration_result.md">docs/phase0_calibration_result.md</a> — the ρ = 0.841 measurement with methodology disclosure</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/docs/phase1_results.md">docs/phase1_results.md</a> — Wiki vs CAG vs Pipeline A bakeoff data</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/logs/phase2_n50/_results.json">logs/phase2_n50/_results.json</a> — N=50 replication data</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/src/content_pipeline/eval/judge.py">src/content_pipeline/eval/judge.py</a> — judge implementation</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/config/rubrics/analytical_essay.yaml">config/rubrics/analytical_essay.yaml</a> — essay rubric (10 criteria)</li>
+<li><a href="https://github.com/tjkuhns/explodable/blob/main/config/rubrics/python_code_quality.yaml">config/rubrics/python_code_quality.yaml</a> — code rubric (6 criteria)</li>
+<li><a href="https://github.com/braintrustdata/autoevals/issues/185">braintrustdata/autoevals#185</a> — code judge feature proposal</li>
+</ul>
 
 </div>
 </article>
