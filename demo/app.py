@@ -118,16 +118,18 @@ with st.sidebar:
     st.metric("Cultural domains", 24)
 
     st.markdown("---")
-    st.markdown("### Pipeline architecture")
+    st.markdown("### Pipelines")
     st.markdown("""
-    1. **Topic router** classifies topic
-    2. **Retrieval** selects findings from KB
-    3. **Graph expansion** cross-domain via PPR
-    4. **Thesis outline** fear→testimony structure
-    5. **Draft** generates with citations
-    6. **Adversarial critic** (Gemini Flash)
-    7. **Revision gate** Pareto filter
-    8. **Judge** 10-criterion rubric, calibrated against a 5-model cluster (ρ = 0.841 Opus / 0.782 Sonnet)
+    **Production** · `graph.py:671`
+    Retrieval → thesis outline → draft → voice-compliance gate → HITL → publish.
+    Wiki-based (ADR-0005).
+
+    **Experimental** · `hybrid_graph.py:596`
+    Measurement surface. Adds topic routing, graph expansion, adversarial critique,
+    revision gating — evaluated before promotion to production.
+
+    **Judge** — 10-criterion rubric, calibrated against a 5-model cluster
+    (ρ = 0.841 Opus / 0.782 Sonnet).
     """)
 
     st.markdown("---")
@@ -238,8 +240,8 @@ with col5:
     st.metric("Validation topics", "N=50",
               help="Dense, medium, sparse, cross-domain, and out-of-distribution conditions.")
 with col6:
-    st.metric("Cost per draft (Wiki)", "~$0.03",
-              help="Phase 1 bakeoff estimate (N=5 topics). Production pipeline was ~$0.30 per draft; Wiki-retrieval ran ~10× cheaper.")
+    st.metric("Cost per draft", "~$0.03",
+              help="Phase 1 bakeoff estimate (N=5 topics). Current production (Wiki-based) runs ~$0.03 per draft; the prior pipeline it replaced ran ~$0.30. ADR-0005.")
 
 
 # ── KB explorer ──
@@ -285,25 +287,56 @@ else:
 
 st.markdown("---")
 st.markdown("## Architecture")
+st.markdown(
+    "Two graphs share one knowledge base. The production graph runs every draft; "
+    "the experimental graph is the measurement surface where architecture changes "
+    "are evaluated before being promoted. The split lets architecture decisions be "
+    "driven by measured results rather than opinion."
+)
 
+st.markdown("### Production pipeline")
+st.caption("`src/content_pipeline/graph.py:671` · runs every draft · Wiki-based retrieval (ADR-0005)")
 st.code("""
-topic_router ─────── classifies topic, routes to optimal retrieval
+calendar_trigger ──── scheduled topic from editorial calendar
+       │
+kb_retriever ──────── multi-query retrieval + decay-weighted scoring
+       │
+content_selector ──── ranks + enforces ≥1 cross-domain finding
+       │
+outline_generator ─── thesis-constrained outline
+       │                   (fear-commit → logic-recruit → testimony-deploy)
+HITL gate ─────────── outline review
+       │
+draft_generator ───── voice profile, inline citation markers
+       │
+bvcs_scorer ───────── voice compliance (fail → revise, max 3 loops)
+       │
+HITL gate ─────────── draft review
+       │
+publisher_stub ────── write markdown to disk
+""", language=None)
+
+st.markdown("### Experimental pipeline")
+st.caption("`src/content_pipeline/experimental/hybrid_graph.py:596` · measurement surface, not production · adversarial critique + revision gating live here because they're being evaluated, not because they're live")
+st.code("""
+topic_router ───────── classifies topic, routes to retrieval strategy
   ├─ wiki_selector ── reads KB index, picks findings across domains
   ├─ vector_retriever ── pgvector similarity search within cluster
   └─ graph_walker ──── PPR traversal + MMR diversity reranking
-         │
+       │
 graph_expander ────── adds cross-domain findings via relationship graph
-         │
-outline_generator ─── thesis-constrained (Architecture B)
-         │               each section must instantiate fear→testimony
-         │
+       │
+outline_generator ─── thesis-constrained
+       │
 draft_generator ───── focused context, voice profile, citations
-         │
-adversarial_critic ── different model reads full KB + draft
-         │
-revision_gate ─────── Pareto filter: accept only if quality improves
-         │
-quality_gate ──────── calibrated judge + execution gate
+       │
+bvcs_scorer ───────── voice compliance (fail → revise, max 3)
+       │
+adversarial_critic ── a different model reads full KB + draft
+       │
+revision_gate ─────── Pareto filter: improve without regressing
+       │
+HITL gate ─────────── draft review → publisher
 """, language=None)
 
 st.markdown("---")
